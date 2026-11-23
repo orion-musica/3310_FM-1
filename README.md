@@ -159,7 +159,8 @@ so export them first.
 ## Using 3310
 
 The FM-1 starts on the ARRANGE page. **SEQ** switches between ARRANGE and FM1 Open's own step editor.
-**HOME** opens FM1 Open's overview. All other buttons work as in FM1 Open.
+**HOME** brings you back to ARRANGE from any page; on ARRANGE it opens the project presets. All other
+buttons work as in FM1 Open.
 
 ### Knobs on the ARRANGE page
 
@@ -170,15 +171,16 @@ The FM-1 starts on the ARRANGE page. **SEQ** switches between ARRANGE and FM1 Op
 | **ALGORITHM** | Track length: 16, 32, 48 or 64 steps. |
 | **K1** | Mode: RHYTHM, GROOVE, SPACE or USER. The name shows inverted in the header. |
 | **K2 – K4** | The three parameters of the current mode. |
+| **EDIT + PRESETS** | Change the selected track's engine (DX7, 303, 808, PSG, Pluck, Sampler). |
 
-The info line under the header shows the selected track, its source, preset, length and the playing
-step. A pending length change is shown until the track reaches it.
+Each row shows the track's symbol, its engine and its length; the selected track has a bar at the left
+edge. Turning PRESETS shows the new preset number for a moment.
 
 ### Building your own knob map (USER mode)
 
 1. Turn **K1** to **USER**.
-2. **Hold EDIT** and turn **K2**, **K3** or **K4**. A list of the eleven parameters opens; turning scrolls
-   it.
+2. **Hold EDIT** and turn **K2**, **K3** or **K4** to step through the eleven parameters. The knob labels at
+   the bottom show your picks; a changed knob is marked with `*`.
 3. **Release EDIT** to keep the new map (**SAVED**), or press **PLAY while holding EDIT** to cancel
    (**CANCELLED**).
 
@@ -193,7 +195,7 @@ step. A pending length change is shown until the track reaches it.
 |---|---|---|---|
 | **HITS** | RHYTHM | ORIG, 0 … length | Spreads the hits evenly: step `s` plays when `(s × hits) mod length < hits`. **ORIG** is your own pattern and the left end of the knob. |
 | **ROTATE** | RHYTHM | 0 … length − 1 | Shifts the generated pattern around the loop. |
-| **MUTATE** | RHYTHM | ERODE 8 … HOLD … EVOLVE 8 | Changes the pattern at every loop wrap. ERODE removes up to 80 % of the hits, fresh each loop. EVOLVE moves hits to empty steps and the moves add up. HOLD restores the generated pattern. |
+| **MUTATE** | RHYTHM | −8 … HOLD … +8 | Changes the pattern at every loop wrap. Negative values ERODE: they remove up to 80 % of the hits, fresh each loop. Positive values EVOLVE: hits move to empty steps and the moves add up. HOLD restores the generated pattern. |
 | **GATE** | GROOVE | 1 … 15 | Note length of every step. Melodic tracks only. |
 | **SWING** | GROOVE | engine range | Global swing of the sequencer. |
 | **CHANCE** | GROOVE | 12 % … 100 % | Probability that a step plays, in eighths. |
@@ -204,7 +206,7 @@ step. A pending length change is shown until the track reaches it.
 | **VOLUME** | USER | engine range | Track volume. |
 
 When a parameter does not apply to the selected track, a short notice explains why, for example
-`CUTOFF: NOT ON DX7 TRACKS`.
+`NOT ON DX7`.
 
 ## What is not (yet) possible
 
@@ -212,6 +214,9 @@ When a parameter does not apply to the selected track, a short notice explains w
 
 - **Track length** is 16, 32, 48 or 64 steps. Free lengths from 1 to 128 would need a new sequencer.
 - **Ratchets and nudge** are not available, so GROOVE uses GATE and SWING instead.
+- **The FM-1's program memory is full.** FM1 Open alone leaves only a few hundred bytes free. To make room
+  for ARRANGE, 3310 drops FM1 Open's old overview page (ARRANGE replaces it) and its Bluetooth settings
+  page, and uses shorter help texts. Bluetooth MIDI itself still works with its saved settings.
 - **HITS, ROTATE, MUTATE and the USER map live in memory.** They reset when the FM-1 is switched off.
   What they produce (steps, chances and sends) is part of the project and is saved normally with SAVE.
 
@@ -322,7 +327,7 @@ in the firmware today.** The other screens use FM1 Open's own pages for now.
 | START is greyed out | The ready check on the installer page says why: wrong browser, page opened as a file, or no build yet. |
 | The update stopped halfway | Keep the cable in, power-cycle the FM-1, reconnect and run the installer again with force flash. |
 | The installer page says **NOT BUILT** | No build has finished yet. Wait for the cloud build, or build locally with `INSTALUJ-3310.bat`. |
-| A knob shows `… ONLY` or `NOT ON …` | That parameter does not apply to the selected track's sound source. Pick another track or mode. |
+| A knob shows `… ONLY` or `NOT ON DX7` | That parameter does not apply to the selected track's sound source. Pick another track or mode. |
 | Patterns reset after power-off | HITS, ROTATE, MUTATE and the USER map are not stored yet; press SAVE to keep the resulting steps. |
 
 ## Contributing

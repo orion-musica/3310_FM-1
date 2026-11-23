@@ -1,0 +1,80 @@
+# 3310: build the firmware and the installer site in the cloud (GitHub Actions).
+# Runs on every push to main, or by hand: Actions > build > Run workflow.
+# Result: the "3310" download (firmware, installer, checksum) and, if GitHub Pages
+# is set to "GitHub Actions", the live site with a ready installer.
+name: build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JieLi Windows toolchain 2.5.3
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:RUNNER_TEMP 'jl-2.5.3.exe'
+          curl.exe -fL --retry 5 --retry-delay 10 -o $exe https://jl-update.oss-cn-shenzhen.aliyuncs.com/2.5.3.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Download of the JieLi toolchain failed.' }
+          function Find-Pi32 { Get-ChildItem C:\JL -Recurse -Filter clang.exe -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -match '\\pi32\\bin\\clang\.exe$' } | Select-Object -First 1 }
+          # Try unpacking first; if that finds nothing, run the installer silently.
+          7z x $exe -o'C:\JL' -y | Out-Null
+          $clang = Find-Pi32
+          if (-not $clang) {
+            foreach ($silent in @('/S', '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '/quiet')) {
+              Start-Process -FilePath $exe -ArgumentList $silent -Wait
+              $clang = Find-Pi32
+              if (-not $clang) {
+                $clang = Get-ChildItem C:\ -Recurse -Filter clang.exe -ErrorAction SilentlyContinue -Depth 5 |
+                  Where-Object { $_.FullName -match '\\pi32\\bin\\clang\.exe$' } | Select-Object -First 1
+              }
+              if ($clang) { break }
+            }
+          }
+          if (-not $clang) {
+            Get-ChildItem C:\JL -Recurse -Depth 3 -ErrorAction SilentlyContinue | Select-Object -First 120 | ForEach-Object FullName
+            throw 'pi32\bin\clang.exe was not found after unpacking or installing the toolchain.'
+          }
+          $pi32 = Split-Path (Split-Path $clang.FullName)
+          Write-Host "Toolchain: $pi32"
+          "FM1_PI32_TOOLCHAIN=$pi32" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build 3310 (firmware + installer + site)
+        shell: pwsh
+        run: |
+          $env:FM1_SOURCE_URL = "https://github.com/${{ github.repository }}/archive/${{ github.sha }}.zip"
+          ./tools/Make-Site.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: '3310'
+          path: |
+            docs/downloads/
+            docs/install/flasher.html
+          if-no-files-found: error
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -499,22 +499,7 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     if (sig == cache->hlv[HLV_C_BOX]) return;
     cache->hlv[HLV_C_BOX] = sig;
     if (!active) return; /* Rows repaint themselves when the box closes. */
-    if (hlv_edit_down && hlv_mode == HLV_USER && k < 3) {
-        /* USER edit list: eight of the eleven parameters around the pick. */
-        unsigned current = hlv_pending[k];
-        paint_fill(8, 48, 224, 128, BACK);
-        frame(8, 48, 224, 128, mc);
-        int first = clamp((int)current - 4, 0, HLV_PARAMS - 8);
-        for (unsigned r = 0; r < 8; ++r) {
-            unsigned p = (unsigned)first + r, y = 54 + r * 15, on = p == current;
-            uint16_t bg = on ? mc : BACK, fg = on ? BACK : TEXT;
-            paint_fill(10, y - 3, 220, 13, bg);
-            text(16, y, hlv_param_names[p], 1, fg, bg);
-            for (unsigned j = 0; j < 3; ++j)
-                if (hlv_pending[j] == p) { char tag[3] = {'K', (char)('2' + j), 0}; text(204, y, tag, 1, fg, bg); }
-        }
-        return;
-    }
+    (void)k; /* The knob labels show the picks (marked *); no list, to save Flash. */
     /* Notes: a small title, a big middle line and a small hint. */
     static const char *const tops[] = {"MODE", "USER", "USER", "USER", "PRESET"};
     static const char *const mids[] = {"", "SAVED", "CANCELLED", "USER ONLY", ""};

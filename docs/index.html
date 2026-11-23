@@ -91,6 +91,32 @@ section{padding:72px 0;border-bottom:1px solid var(--line)}
 .file:hover{background:var(--panel)}
 .file b{font-family:var(--px);color:var(--ink)}.file span{font-size:14px;color:var(--dim)}
 @media (max-width:820px){.console{grid-template-columns:minmax(0,1fr)}.console .left{border-right:0;border-bottom:3px solid var(--ink)}}
+/* manual */
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 40px}
+.toc a{font-family:var(--px);font-size:13px;text-decoration:none;border:2px solid var(--ink);padding:8px 12px;color:var(--ink);min-height:44px;display:inline-flex;align-items:center}
+.toc a:hover{background:var(--ink);color:var(--bg)}
+.chapter{padding:28px 0 36px;border-top:3px solid var(--ink)}
+.ch{font-size:22px;color:var(--ink);margin:0 0 18px}
+.chapter h4{font-family:var(--px);font-size:15px;color:var(--ink);margin:18px 0 8px;letter-spacing:1px}
+.split{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;margin:0 0 18px}
+.split>div,.split>ol,.split>ul{flex:1 1 360px;min-width:0}
+.split.two{gap:18px}
+.shot{margin:0;flex:0 0 auto;max-width:100%;display:flex;flex-direction:column;gap:8px}
+.shot img{border:3px solid var(--ink);background:var(--bg)}
+.shot figcaption{font-size:13px;color:var(--dim);max-width:320px}
+.shot.inline{margin-top:8px}
+.callouts{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.callouts b,.tight b{color:var(--ink)}
+.tight{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.note{font-size:14px;color:var(--dim);border-left:0;margin:10px 0 0}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:0 0 18px;display:block;overflow-x:auto}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:2px dashed var(--line)}
+th{font-family:var(--px);font-size:13px;color:var(--bg);background:var(--ink);font-weight:400;letter-spacing:1px}
+td:first-child{font-family:var(--px);font-size:13px;color:var(--ink);white-space:nowrap}
+.recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:14px}
+.recipe{border:3px solid var(--ink);padding:14px 16px;background:var(--panel)}
+.recipe h4{margin:0 0 8px}
+.recipe ol{margin:0;padding-left:20px;font-size:14px}
 footer{padding:32px 0 56px;font-size:14px;color:var(--dim)}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
 .about{max-width:760px}
@@ -101,7 +127,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
   <div class="wrap">
     <svg width="28" height="21" viewBox="0 0 12 9" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="5" height="1"/><rect x="2" y="0" width="1" height="9"/><rect x="4" y="6" width="2" height="3"/><rect x="7" y="3" width="2" height="6"/><rect x="10" y="0" width="2" height="9"/></svg>
     <a class="name" href="#top">3310</a>
-    <nav aria-label="Sections"><a href="#symbols">Symbols</a><a href="#modes">Modes</a><a href="#menu">Screens</a><a href="#install">Install</a><a href="#about">About</a></nav>
+    <nav aria-label="Sections"><a href="#symbols">Symbols</a><a href="#modes">Modes</a><a href="#menu">Screens</a><a href="#manual">Manual</a><a href="#install">Install</a><a href="#about">About</a></nav>
     <svg width="16" height="23" viewBox="0 0 7 10" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="3" height="1" fill="currentColor"/><rect x="0" y="1" width="7" height="9" fill="currentColor"/><rect x="1" y="2" width="5" height="7" fill="#c7f0d8"/><rect x="2" y="3" width="3" height="1" fill="currentColor"/><rect x="2" y="5" width="3" height="1" fill="currentColor"/><rect x="2" y="7" width="3" height="1" fill="currentColor"/></svg>
   </div>
 </header>
@@ -115,7 +141,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
       <p class="lead">Your FM-1, dressed as the phone everyone had. Eight FM tracks, patterns that mutate while they loop, two shades of green and a symbol for every track.</p>
       <div class="btns">
         <a class="btn primary" href="#install">Install</a>
-        <a class="btn" href="#menu">Menu</a>
+        <a class="btn" href="#manual">Manual</a>
       </div>
       <ul class="meta"><li>Free and open source (GPL-3.0)</li><li>Built on FM1 Open V14</li><li>Installs from Chrome or Edge</li></ul>
     </div>
@@ -149,6 +175,191 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
     <h2>Menu</h2>
     <p class="sub">Screens from the real firmware, rendered by its own drawing code.</p>
     <div class="gal"><figure><img src="assets/rhythm.png" width="240" height="240" alt="2-1 RHYTHM screen" loading="lazy"><figcaption><b>2-1 RHYTHM</b><span>Euclidean HITS, ROTATE and MUTATE on K2 to K4.</span></figcaption></figure><figure><img src="assets/groove.png" width="240" height="240" alt="2-2 GROOVE screen" loading="lazy"><figcaption><b>2-2 GROOVE</b><span>GATE, SWING and CHANCE: the feel of the loop.</span></figcaption></figure><figure><img src="assets/space.png" width="240" height="240" alt="2-3 SPACE screen" loading="lazy"><figcaption><b>2-3 SPACE</b><span>CUTOFF, PUNCH and a dub delay THROW.</span></figcaption></figure><figure><img src="assets/user-edit.png" width="240" height="240" alt="2-4 USER screen" loading="lazy"><figcaption><b>2-4 USER</b><span>Hold EDIT, turn a knob, release to keep your own map.</span></figcaption></figure><figure><img src="assets/evolve.png" width="240" height="240" alt="2-5 MUTATE screen" loading="lazy"><figcaption><b>2-5 MUTATE</b><span>Patterns that erode or evolve every loop.</span></figcaption></figure><figure><img src="assets/boot.png" width="240" height="240" alt="1-1 BOOT screen" loading="lazy"><figcaption><b>1-1 BOOT</b><span>Signal and battery bars fill while the engine starts.</span></figcaption></figure></div>
+  </div>
+</section>
+
+<section id="manual">
+  <div class="wrap">
+    <h2>Manual</h2>
+    <p class="sub">Everything you need to play 3310, in the order you will need it.</p>
+    <nav class="toc" aria-label="Manual contents">
+      <a href="#m-screen">1 The ARRANGE screen</a><a href="#m-knobs">2 Knobs</a><a href="#m-buttons">3 Buttons</a>
+      <a href="#m-modes">4 Modes</a><a href="#m-user">5 USER map</a><a href="#m-recipes">6 Recipes</a>
+      <a href="#m-params">7 Parameter table</a><a href="#m-save">8 Saving</a><a href="#m-limits">9 Limits</a>
+    </nav>
+
+    <div class="chapter" id="m-screen">
+      <h3 class="ch">1 · The ARRANGE screen</h3>
+      <div class="split">
+        <figure class="shot"><img src="assets/m-arrange.png" width="320" height="320" alt="ARRANGE screen in RHYTHM mode with eight tracks" loading="lazy"><figcaption>ARRANGE in RHYTHM mode, track 1 selected.</figcaption></figure>
+        <ol class="callouts">
+          <li><b>Header.</b> Mode name (inverted box), tempo in BPM, and a square that lights up whenever any track is loud.</li>
+          <li><b>Track symbol.</b> One per track. It flips to inverse on every hit, so you can see which tracks are firing.</li>
+          <li><b>Engine.</b> <code>DX7</code>, <code>303</code>, <code>808</code>, <code>PSG</code>, <code>PLK</code> (pluck) or <code>SMP</code> (sampler). The selected track has a bar on the left edge.</li>
+          <li><b>Bars.</b> 16 cells = 16 bars of 4 steps, grouped in 4 sections. Filled: the bar has notes. Light: empty bar. Outlined: the bar playing now. Thin frame: beyond the track's length.</li>
+          <li><b>Right column.</b> Track length in steps. In GROOVE mode it shows the track's CHANCE instead.</li>
+          <li><b>Zoom strip.</b> The 16 steps of the section the selected track is playing, one cell per step. The playhead is outlined.</li>
+          <li><b>Knob row.</b> K1 shows the mode, K2 to K4 show the current parameter names and values.</li>
+          <li><b>Hint line.</b> Short reminders and warnings, for example <code>NOT ON DX7</code>.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="chapter" id="m-knobs">
+      <h3 class="ch">2 · Knobs on ARRANGE</h3>
+      <table>
+        <thead><tr><th>Knob</th><th>Does</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>SELECT</td><td>Choose track 1–8</td><td>Everything below acts on this track, except SWING.</td></tr>
+          <tr><td>PRESETS</td><td>Sound of the track</td><td>The new preset number pops up for a moment.</td></tr>
+          <tr><td>ALGORITHM</td><td>Track length: 16 / 32 / 48 / 64 steps</td><td>The change lands when the track's loop comes round.</td></tr>
+          <tr><td>K1</td><td>Mode: RHYTHM → GROOVE → SPACE → USER</td><td>The mode name and its three knobs pop up.</td></tr>
+          <tr><td>K2 · K3 · K4</td><td>The three parameters of the mode</td><td>See chapter 4 and the table in chapter 7.</td></tr>
+        </tbody>
+      </table>
+      <div class="split two">
+        <figure class="shot"><img src="assets/m-mode.png" width="240" height="240" alt="Mode pop-up showing GROOVE: GATE SWING CHANCE" loading="lazy"><figcaption>K1 turned: the pop-up names the mode and its knobs.</figcaption></figure>
+        <figure class="shot"><img src="assets/m-preset.png" width="240" height="240" alt="Preset pop-up showing 002 DX7" loading="lazy"><figcaption>PRESETS turned: preset number and engine.</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="chapter" id="m-buttons">
+      <h3 class="ch">3 · Buttons</h3>
+      <table>
+        <thead><tr><th>Press</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>SEQ</td><td>Switch between ARRANGE and the step editor (write notes step by step).</td></tr>
+          <tr><td>HOME</td><td>Back to ARRANGE from any page. On ARRANGE: open the preset browser (user and factory projects).</td></tr>
+          <tr><td>PLAY</td><td>Start / stop.</td></tr>
+          <tr><td>REC</td><td>Recording on / off.</td></tr>
+          <tr><td>EDIT (tap)</td><td>Quick sound editor of the selected track. Tap again to return.</td></tr>
+          <tr><td>SCL</td><td>Deep sound editor (DX7 operators, or the engine's full page).</td></tr>
+          <tr><td>ENV · LFO</td><td>Envelope page · LFO page of the selected track.</td></tr>
+          <tr><td>FX</td><td>Effects of the track. Turn PRESETS for the shared FX and the delay page.</td></tr>
+          <tr><td>GLO (tap)</td><td>Mixer. Keys 1–8 mute, keys 9–16 solo.</td></tr>
+          <tr><td>GLO (hold)</td><td>K1–K4 set the volume of tracks 1–4 (or 5–8, if a track from 5–8 is selected); keys mute / solo. Release to go back.</td></tr>
+          <tr><td>ARP (tap · hold)</td><td>Arpeggiator on / off for the track · arpeggiator settings.</td></tr>
+          <tr><td>OCT− · OCT+</td><td>Keyboard octave, −2 to +2.</td></tr>
+          <tr><td>SAVE</td><td>Project page: save to or load from a slot.</td></tr>
+        </tbody>
+      </table>
+      <h4>Shortcuts</h4>
+      <table>
+        <tbody>
+          <tr><td>HOME + PLAY</td><td><b>Panic:</b> all notes off, back to ARRANGE.</td></tr>
+          <tr><td>HOME + SAVE</td><td>Undo / redo the last edit.</td></tr>
+          <tr><td>HOME + SEQ (tap)</td><td>Tap tempo. Two taps start it; up to four are averaged.</td></tr>
+          <tr><td>HOME + PRESETS<br>EDIT + PRESETS</td><td>Change the track's engine. Turn to choose, SAVE to apply, HOME to cancel. A new engine starts from its default sound.</td></tr>
+          <tr><td>SEQ + EDIT</td><td>Actions: copy, paste, clear, repeat to 32/48/64, undo, copy / paste timbre.</td></tr>
+          <tr><td>EDIT + REC</td><td>Rename the DX7 patch.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="chapter" id="m-modes">
+      <h3 class="ch">4 · The four modes</h3>
+      <div class="split">
+        <figure class="shot"><img src="assets/m-evolve.png" width="320" height="320" alt="RHYTHM mode with ROTATE +6 and MUTATE +8" loading="lazy"><figcaption>RHYTHM: ROTATE +6, MUTATE +8 (evolving).</figcaption></figure>
+        <div>
+          <h4>RHYTHM · pattern</h4>
+          <ul class="tight">
+            <li><b>K2 HITS</b> spreads N hits evenly over the track (Euclidean). Turn left to the end for <b>ORIG</b>: your own written notes, untouched.</li>
+            <li><b>K3 ROTATE</b> shifts the pattern around the loop. Same hits, new accent.</li>
+            <li><b>K4 MUTATE</b> rewrites the pattern each time the loop starts. Left (−1 … −8) <b>erodes</b>: hits drop out, freshly each loop. Right (+1 … +8) <b>evolves</b>: hits wander to empty steps and the changes add up. <b>HOLD</b> (centre) stops it and brings back the HITS / ROTATE pattern.</li>
+          </ul>
+          <p class="note">Melodic tracks keep their notes: HITS reuses the pitches you wrote. On drum tracks HITS acts on the drum part selected in the step editor.</p>
+        </div>
+      </div>
+      <div class="split">
+        <figure class="shot"><img src="assets/m-chance.png" width="320" height="320" alt="GROOVE mode with CHANCE values in the right column" loading="lazy"><figcaption>GROOVE: CHANCE per track in the right column.</figcaption></figure>
+        <div>
+          <h4>GROOVE · feel</h4>
+          <ul class="tight">
+            <li><b>K2 GATE</b> note length for every step of the track, 1/16 to full. Melodic tracks only.</li>
+            <li><b>K3 SWING</b> global swing of the sequencer: all tracks.</li>
+            <li><b>K4 CHANCE</b> probability that each step plays: 100 %, 88 % … 12 %. Great for hats and ghost notes.</li>
+          </ul>
+          <h4>SPACE · sound and depth</h4>
+          <ul class="tight">
+            <li><b>K2 CUTOFF</b> filter offset ±99. Not on DX7 tracks.</li>
+            <li><b>K3 PUNCH</b> decay of the amp envelope. DX7 tracks only; switches the envelope on if the patch had it off.</li>
+            <li><b>K4 THROW</b> dub throw: raises the delay send while you turn and drops back 1.5 s after you stop.</li>
+          </ul>
+        </div>
+      </div>
+      <figure class="shot inline"><img src="assets/m-space.png" width="240" height="240" alt="SPACE mode on a DX7 track: CUTOFF shows --" loading="lazy"><figcaption>SPACE on a DX7 track: CUTOFF shows <code>--</code>, PUNCH works.</figcaption></figure>
+    </div>
+
+    <div class="chapter" id="m-user">
+      <h3 class="ch">5 · USER mode: your own knobs</h3>
+      <div class="split">
+        <figure class="shot"><img src="assets/m-user-edit.png" width="320" height="320" alt="USER edit: EDIT held, K2 and K3 marked with stars" loading="lazy"><figcaption>EDIT held: changed knobs carry a <code>*</code>.</figcaption></figure>
+        <ol class="tight">
+          <li>Turn <b>K1</b> to <b>USER</b>.</li>
+          <li><b>Hold EDIT</b> and turn <b>K2</b>, <b>K3</b> or <b>K4</b>. Each click steps to the next of the eleven parameters; the knob label at the bottom shows the pick with a <code>*</code>.</li>
+          <li><b>Let go of EDIT</b> to keep the map (<b>SAVED</b>). Press <b>PLAY while holding EDIT</b> to throw the changes away.</li>
+        </ol>
+      </div>
+      <ul class="tight">
+        <li>Picking a parameter another knob already has swaps the two knobs.</li>
+        <li>Changing the map never changes the sound or the patterns.</li>
+        <li>Parameter order: HITS, ROTATE, MUTATE, GATE, SWING, CHANCE, CUTOFF, PUNCH, THROW, REVERB, VOLUME. REVERB and VOLUME exist only in USER.</li>
+        <li>A good live map: <b>HITS · CHANCE · THROW</b>.</li>
+      </ul>
+    </div>
+
+    <div class="chapter" id="m-recipes">
+      <h3 class="ch">6 · Recipes</h3>
+      <div class="recipes">
+        <div class="recipe"><h4>A kick in 10 seconds</h4><ol><li>SELECT track 1.</li><li>K1 → RHYTHM.</li><li>K2 HITS → 4 (track length 16): four on the floor.</li></ol></div>
+        <div class="recipe"><h4>Rolling off-beat bass</h4><ol><li>SELECT the 303 track.</li><li>HITS → 4, ROTATE → +2.</li><li>K1 → GROOVE, GATE short.</li></ol></div>
+        <div class="recipe"><h4>Hats that breathe</h4><ol><li>HITS → 8 or 16.</li><li>GROOVE: CHANCE 62–75 %.</li><li>Add a little SWING.</li></ol></div>
+        <div class="recipe"><h4>Slow hypnotic drift</h4><ol><li>Write a melody in the step editor (SEQ).</li><li>Back on ARRANGE: ALGORITHM → 64 steps.</li><li>MUTATE → +2. Turn back to HOLD when you like it.</li></ol></div>
+        <div class="recipe"><h4>Breakdown</h4><ol><li>MUTATE → −6 on drums: they thin out.</li><li>GLO hold, K1–K4 down on the low tracks.</li><li>MUTATE → HOLD to drop back in.</li></ol></div>
+        <div class="recipe"><h4>Dub throw</h4><ol><li>SPACE on the perc track.</li><li>Flick K4 THROW right on the last beat.</li><li>It returns by itself after 1.5 s.</li></ol></div>
+        <div class="recipe"><h4>Phasing lengths</h4><ol><li>Track A at 64, track B at 48.</li><li>They line up again only every 192 steps.</li><li>Keep the kick at 16 as the anchor.</li></ol></div>
+        <div class="recipe"><h4>Get your notes back</h4><ol><li>K2 HITS all the way left → ORIG.</li><li>ROTATE → 0, MUTATE → HOLD.</li><li>Your written pattern returns.</li></ol></div>
+      </div>
+    </div>
+
+    <div class="chapter" id="m-params">
+      <h3 class="ch">7 · Parameter table</h3>
+      <table>
+        <thead><tr><th>Parameter</th><th>Mode</th><th>Display</th><th>Range</th><th>Works on</th></tr></thead>
+        <tbody>
+          <tr><td>HITS</td><td>RHYTHM</td><td><code>ORIG</code> or count</td><td>ORIG, 0 … length</td><td>all tracks</td></tr>
+          <tr><td>ROTATE</td><td>RHYTHM</td><td><code>+6</code></td><td>0 … length − 1</td><td>all tracks</td></tr>
+          <tr><td>MUTATE</td><td>RHYTHM</td><td><code>HOLD</code>, <code>−3</code>, <code>+8</code></td><td>−8 … +8</td><td>all tracks</td></tr>
+          <tr><td>GATE</td><td>GROOVE</td><td><code>50%</code></td><td>6 … 100 %</td><td>melodic tracks</td></tr>
+          <tr><td>SWING</td><td>GROOVE</td><td><code>50%</code></td><td>sequencer range</td><td>whole song</td></tr>
+          <tr><td>CHANCE</td><td>GROOVE</td><td><code>75%</code></td><td>12 … 100 % in eighths</td><td>all tracks</td></tr>
+          <tr><td>CUTOFF</td><td>SPACE</td><td><code>+12</code></td><td>±99</td><td>not DX7</td></tr>
+          <tr><td>PUNCH</td><td>SPACE</td><td>decay or <code>PATCH</code></td><td>envelope range</td><td>DX7 only</td></tr>
+          <tr><td>THROW</td><td>SPACE</td><td><code>OFF</code> or %</td><td>0 … 100 %</td><td>all tracks</td></tr>
+          <tr><td>REVERB</td><td>USER</td><td><code>40%</code></td><td>0 … 100 %</td><td>all tracks</td></tr>
+          <tr><td>VOLUME</td><td>USER</td><td>level</td><td>engine range</td><td>all tracks</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="chapter" id="m-save">
+      <h3 class="ch">8 · Saving</h3>
+      <ul class="tight">
+        <li><b>SAVE</b> opens the project page: choose a slot and save. The steps, chances, gates and sends that 3310 wrote are saved with the project.</li>
+        <li><b>Not saved:</b> the knob positions of HITS, ROTATE and MUTATE, and the USER map. After power-off they start from ORIG / 0 / HOLD and the default map. Your saved pattern is whatever was playing when you pressed SAVE.</li>
+        <li>Unsaved edits are lost at power-off. <b>HOME + SAVE</b> undoes the last edit.</li>
+      </ul>
+    </div>
+
+    <div class="chapter" id="m-limits">
+      <h3 class="ch">9 · Limits</h3>
+      <ul class="tight">
+        <li>Track lengths are 16, 32, 48 or 64 steps. The sequencer is M-VAVE's own and has no other lengths.</li>
+        <li>No ratchets or nudge.</li>
+        <li>The FM-1 is full: to fit ARRANGE, 3310 has no Bluetooth settings page (Bluetooth MIDI still works with its saved settings) and uses short help texts.</li>
+        <li>MIDI: tracks 1–7 listen on channels 1–7, track 8 on channel 10.</li>
+      </ul>
+    </div>
   </div>
 </section>
 

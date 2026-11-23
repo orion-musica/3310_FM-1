@@ -67,27 +67,14 @@ static uint8_t hlv_patch[156];
 
 static void hlv_init(void)
 {
-    hlv_mode = HLV_RHYTHM;
+    /* Called once at start; everything not set here starts at zero. */
     memcpy(hlv_user, hlv_factory_map[0], sizeof hlv_user);
     memcpy(hlv_pending, hlv_user, sizeof hlv_pending);
-    hlv_edit_down = hlv_edit_used = 0;
     hlv_edit_knob = 3;
-    hlv_note_kind = HLV_NOTE_MODE;
-    hlv_note_at = 0;
     hlv_seed = 0x48c27a13U;
-    memset(hlv_based, 0, sizeof hlv_based);
-    memset(hlv_lane, 0, sizeof hlv_lane);
     memset(hlv_hits, HLV_ORIG, sizeof hlv_hits);
-    memset(hlv_rot, 0, sizeof hlv_rot);
-    memset(hlv_mut, 0, sizeof hlv_mut);
-    memset(hlv_cut, 0, sizeof hlv_cut);
     memset(hlv_chance, 8, sizeof hlv_chance);
     memset(hlv_gate, 8, sizeof hlv_gate);
-    memset(hlv_last_step, 0, sizeof hlv_last_step);
-    memset(hlv_throw_amount, 0, sizeof hlv_throw_amount);
-    memset(hlv_throw_base, 0, sizeof hlv_throw_base);
-    memset(hlv_throw_on, 0, sizeof hlv_throw_on);
-    memset(hlv_throw_until, 0, sizeof hlv_throw_until);
 }
 static unsigned hlv_rand(void)
 {
@@ -264,7 +251,7 @@ static void hlv_param_turn(unsigned p, int delta, uint32_t now)
         if (!hlv_mut[t]) hlv_apply(t); /* HOLD restores the generated pattern. */
         break;
     case HLV_P_GATE:
-        if (groove_pad_count(t)) { notice = "GATE: MELODIC TRACKS ONLY"; notice_until = now + 1500U; break; }
+        if (groove_pad_count(t)) { notice = "MELODIC ONLY"; notice_until = now + 1500U; break; }
         hlv_gate[t] = (uint8_t)clamp(hlv_gate[t] + step, 1, 15);
         hlv_step_settings(t, 1, hlv_gate[t]);
         break;
@@ -276,12 +263,12 @@ static void hlv_param_turn(unsigned p, int delta, uint32_t now)
         hlv_step_settings(t, 2, hlv_chance[t] == 8 ? 0U : hlv_chance[t]);
         break;
     case HLV_P_CUTOFF:
-        if (groove_source_type(t) == GROOVE_DX7) { notice = "CUTOFF: NOT ON DX7 TRACKS"; notice_until = now + 1500U; break; }
+        if (groove_source_type(t) == GROOVE_DX7) { notice = "NOT ON DX7"; notice_until = now + 1500U; break; }
         groove_control_edit(t, 0, 0, delta);
         hlv_cut[t] = (int8_t)clamp(hlv_cut[t] + delta, -99, 99);
         break;
     case HLV_P_PUNCH: {
-        if (groove_source_type(t) != GROOVE_DX7) { notice = "PUNCH: DX7 TRACKS ONLY"; notice_until = now + 1500U; break; }
+        if (groove_source_type(t) != GROOVE_DX7) { notice = "DX7 ONLY"; notice_until = now + 1500U; break; }
         struct groove_fm_controls controls;
         memset(&controls, 0, sizeof controls);
         if (!groove_fm_copy(t, hlv_patch, &controls) && !controls.enabled) groove_adsr_enable(t, 1);
@@ -643,7 +630,7 @@ static void hlv_draw(const struct groove_view v[8])
         knob(1 + i, label, value, mc);
     }
     if (!(paint_rendering && paint_top + PAINT_ROWS <= 229)) {
-        const char *hint = notice ? notice : hlv_edit_down ? "EDIT HELD" : "SEL TRACK  PRESETS  ALG LENGTH";
+        const char *hint = notice ? notice : hlv_edit_down ? "EDIT HELD" : "SEL TRACK  PRE SOUND  ALG LEN";
         uint32_t sig = signature(0, hint, (unsigned)strlen(hint));
         if (sig != cache->hlv[HLV_C_HINT]) {
             cache->hlv[HLV_C_HINT] = sig;

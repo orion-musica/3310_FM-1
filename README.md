@@ -56,8 +56,7 @@ M-VAVE's own, so timing and sound are exactly as on FM1 Open. 3310 adds a new **
 four knob modes, a new look, a phone-style boot screen and a phone symbol for every track. Everything
 FM1 Open can do keeps working.
 
-3310 is the monochrome sister of **HASTA LA VISTA**, which shares the same ARRANGE module with a
-different look. No phone maker's logo or name is used anywhere.
+No phone maker's logo or name is used anywhere.
 
 ## Features
 
@@ -241,8 +240,8 @@ Requires Windows x64, PowerShell and **JieLi Windows toolchain 2.5.3** (PI32v2 c
 target). The build checks all toolchain files against `sdk/manifest.json`. See
 [README.FM1-OPEN.md](README.FM1-OPEN.md) for the download and the installation guide.
 
-The easy way: double-click **`INSTALUJ-3310.bat`**. It finds the toolchain under `C:\JL\pi32`, builds
-everything and opens the installer at `http://localhost:8766`. **`OTWORZ-STRONE.bat`** opens the site
+The easy way: double-click **`INSTALL-3310.bat`**. It finds the toolchain under `C:\JL\pi32`, builds
+everything and opens the installer at `http://localhost:8766`. **`OPEN-SITE.bat`** opens the site
 again later without building.
 
 By hand, in PowerShell from the repository root:
@@ -272,7 +271,7 @@ $env:FM1_SOURCE_URL = 'https://github.com/orion-musica/3310_FM-1/archive/refs/he
 
 | Path | Contents |
 |---|---|
-| `app/hlv.inc` | **The ARRANGE module:** modes, parameters, USER editing, mutation, track symbols and drawing. Shared with HASTA LA VISTA. |
+| `app/hlv.inc` | **The ARRANGE module:** modes, parameters, USER editing, mutation, track symbols and drawing. |
 | `app/screen.c` | FM1 Open's panel code with small hooks: the LCD palette, the ARRANGE page, the boot screen and button routing. |
 | `app/` (rest) | FM1 Open application code: audio, MIDI, projects, samples, presets. |
 | `sdk/` | FM1 SDK: build script, engine library, headers, packaging tools, stock V15 recovery image. |
@@ -326,7 +325,7 @@ in the firmware today.** The other screens use FM1 Open's own pages for now.
 | The browser does not find the FM-1 | Close other MIDI apps and installer tabs, switch the FM-1 off and on, reconnect USB and click Connect again. The installer's **Connection details** lists the MIDI ports it found. |
 | START is greyed out | The ready check on the installer page says why: wrong browser, page opened as a file, or no build yet. |
 | The update stopped halfway | Keep the cable in, power-cycle the FM-1, reconnect and run the installer again with force flash. |
-| The installer page says **NOT BUILT** | No build has finished yet. Wait for the cloud build, or build locally with `INSTALUJ-3310.bat`. |
+| The installer page says **NOT BUILT** | No build has finished yet. Wait for the cloud build, or build locally with `INSTALL-3310.bat`. |
 | A knob shows `… ONLY` or `NOT ON DX7` | That parameter does not apply to the selected track's sound source. Pick another track or mode. |
 | Patterns reset after power-off | HITS, ROTATE, MUTATE and the USER map are not stored yet; press SAVE to keep the resulting steps. |
 
@@ -340,12 +339,12 @@ bug, please include:
 - the build's SHA-256 from the installer page;
 - whether you came from stock V15 or FM1 Open.
 
-Pull requests should keep `app/hlv.inc` shared with HASTA LA VISTA. Only colours and the boot screen
-differ between the two.
+Pull requests are welcome too. Please keep changes to the ARRANGE module in `app/hlv.inc` and test them
+with a cloud build before opening the pull request.
 
 ## Credits
 
-- **3310 and HASTA LA VISTA:** BULØKE. The code was written together with Claude.
+- **3310:** BULØKE. The code was written together with Claude.
 - **FM1 Open:** M-VAVE (珠海笙科智能科技有限公司), the base firmware, SDK and web installer.
 - **Third-party components** (Open303, DaisySP, stmlib, MSFA / Dexed, emu2149, SEA codec, jl-misctools
   and others): see [THIRD_PARTY.md](THIRD_PARTY.md).

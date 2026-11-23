@@ -176,9 +176,9 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
   <div class="wrap">
     <h2>Help</h2>
     <details><summary>The browser does not find the FM-1</summary><p>Close other MIDI apps and installer tabs, switch the FM-1 off and on, reconnect USB and click Connect again. Open Connection details in the installer to see which MIDI ports the browser found.</p></details>
-    <details><summary>START is greyed out</summary><p>The ready check shows why. Wrong browser: use desktop Chrome or Edge (Safari, Firefox and phones have no Web MIDI). Opened as a file: run <code>OTWORZ-STRONE.bat</code> so the page runs on localhost.</p></details>
+    <details><summary>START is greyed out</summary><p>The ready check shows why. Wrong browser: use desktop Chrome or Edge (Safari, Firefox and phones have no Web MIDI). Opened as a file: run <code>OPEN-SITE.bat</code> so the page runs on localhost.</p></details>
     <details><summary>The update stopped halfway</summary><p>Keep the cable in, power-cycle the FM-1, reconnect and run the installer again with force flash.</p></details>
-    <details><summary>It says NOT BUILT</summary><p>The firmware has to be compiled once. On Windows run <code>INSTALUJ-3310.bat</code> in the project folder. It builds 3310 and opens this page on <code>http://localhost:8766</code>.</p></details>
+    <details><summary>It says NOT BUILT</summary><p>The firmware has to be compiled once. On Windows run <code>INSTALL-3310.bat</code> in the project folder. It builds 3310 and opens this page on <code>http://localhost:8766</code>.</p></details>
     <details><summary>Will I lose my projects?</summary><p>An update with the same storage layout keeps valid project slots and the sample bank. Switching from stock V15 does not. Back up either way.</p></details>
   </div>
 </section>
@@ -218,11 +218,11 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
   }
   var state, note, start = $('start');
   if (!built) {
-    state = 'NOT BUILT'; note = 'Compile once with INSTALUJ-3310.bat (see Help).';
+    state = 'NOT BUILT'; note = 'Compile once with INSTALL-3310.bat (see Help).';
   } else if (!midi || mobile) {
     state = 'WRONG BROWSER'; note = 'Open this page in desktop Chrome or Edge.';
   } else if (!secure) {
-    state = 'OPEN VIA SERVER'; note = 'Run OTWORZ-STRONE.bat, or use the https site.';
+    state = 'OPEN VIA SERVER'; note = 'Run OPEN-SITE.bat, or use the https site.';
   } else {
     state = 'READY'; note = 'Connect the FM-1 and press START.';
     start.setAttribute('aria-disabled', 'false');

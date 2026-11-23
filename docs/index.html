@@ -141,7 +141,7 @@ footer p{margin:6px 0;max-width:820px}
       </div>
       <div class="meta">
         <span>Version <b id="ver">0.1</b> (phase 1)</span>
-        <span>Monochrome edition of HASTA LA VISTA</span>
+        <span>Two-tone LCD theme</span>
         <span>GPL-3.0</span>
         <span>Chrome or Edge, USB cable</span>
       </div>
@@ -193,7 +193,7 @@ footer p{margin:6px 0;max-width:820px}
     </ol>
     <div class="status" id="status" role="status">
       <p class="st-title" id="st-title">CHECKING THE INSTALLER…</p>
-      <p id="st-text">If this text stays, open the page through <code>OTWORZ-STRONE.bat</code> or GitHub Pages.</p>
+      <p id="st-text">If this text stays, open the page through <code>OPEN-SITE.bat</code> or GitHub Pages.</p>
     </div>
     <div class="install-cta">
       <a class="btn primary" id="open-installer" href="install/index.html">Open the installer</a>
@@ -321,12 +321,12 @@ footer p{margin:6px 0;max-width:820px}
     text.innerHTML = 'Firmware built ' + build.date + ', ' + Math.round(build.bytes / 1024) + ' KB, SHA-256 <code>' +
       build.sha256.slice(0, 16) + '…</code>.' +
       (midi ? '' : ' <strong>This browser has no Web MIDI: use Chrome or Edge on a computer.</strong>') +
-      (local ? ' You opened this page from disk; if the installer cannot see the FM-1, start <code>OTWORZ-STRONE.bat</code> instead.' : '');
+      (local ? ' You opened this page from disk; if the installer cannot see the FM-1, start <code>OPEN-SITE.bat</code> instead.' : '');
   } else {
     box.className = 'status missing';
     title.textContent = 'FIRMWARE NOT BUILT YET';
     text.innerHTML = 'The installer appears after the firmware is compiled once on Windows.' +
-      '<ol><li>Double-click <code>INSTALUJ-3310.bat</code> in the project folder.</li>' +
+      '<ol><li>Double-click <code>INSTALL-3310.bat</code> in the project folder.</li>' +
       '<li>If the JieLi toolchain is missing, it opens the download; install it and run the file again.</li>' +
       '<li>When the build finishes, the installer opens in Chrome or Edge on <code>http://localhost:8766</code>.</li></ol>';
     document.getElementById('open-installer').classList.add('disabled');

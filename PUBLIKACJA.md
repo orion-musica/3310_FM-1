@@ -1,8 +1,8 @@
 # Jak opublikować 3310 (GitHub + GitHub Pages)
 
-> **Najpierw lokalnie:** kliknij dwa razy `INSTALUJ-3310.bat`. Zbuduje firmware,
+> **Najpierw lokalnie:** kliknij dwa razy `INSTALL-3310.bat`. Zbuduje firmware,
 > uruchomi lokalny serwer i otworzy instalator w Chrome/Edge (`http://localhost:8766`).
-> `OTWORZ-STRONE.bat` otwiera samą stronę. Publikacja na GitHubie jest potrzebna dopiero,
+> `OPEN-SITE.bat` otwiera samą stronę. Publikacja na GitHubie jest potrzebna dopiero,
 > gdy chcesz udostępnić firmware innym.
 
 Robisz to raz. Później każda nowa wersja to tylko kroki 4–6.

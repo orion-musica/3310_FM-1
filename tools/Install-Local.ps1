@@ -2,7 +2,7 @@
 # 3310: one-click local install.
 # 1. finds the JieLi toolchain   2. builds the firmware and the installer page
 # 3. starts a local server and opens the installer in Chrome or Edge.
-# Run from INSTALUJ-3310.bat in the repository root.
+# Run from INSTALL-3310.bat in the repository root.
 [CmdletBinding()]
 param(
     [switch]$SkipBuild,

@@ -507,7 +507,7 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     unsigned kind = hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
     const char *top = tops[kind], *mid = mids[kind], *sub = subs[kind];
     char line[28];
-    if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K2-K4"; sub = "RELEASE SAVE / +PLAY CANCEL"; }
+    if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K2-K4"; sub = "LET GO SAVE  +PLAY UNDO"; }
     else if (kind == HLV_NOTE_MODE) {
         mid = hlv_mode_names[hlv_mode]; big = 3;
         line[0] = 0;

@@ -1178,6 +1178,15 @@ static __attribute__((noinline)) void edit_page_draw(unsigned visible)
         text(8, 231, "EDIT BACK  HOLD EDIT MORE", 1, DIM, BACK);
     }
 }
+#ifndef FM1_HOST_TEST
+/* 3310 has no Bluetooth page, but the SDK build check requires the runtime
+ * entry points to stay linked: keep them referenced. */
+static void (*const ble_keep[])(void) = {
+    (void (*)(void))fm1_ble_set_role, (void (*)(void))fm1_ble_scan, (void (*)(void))fm1_ble_connect,
+    (void (*)(void))fm1_ble_disconnect, (void (*)(void))fm1_ble_get_status, (void (*)(void))fm1_ble_get_device,
+    (void (*)(void))fm1_bluetooth_configure, (void (*)(void))fm1_bluetooth_get_status};
+static void (*const *volatile ble_keep_ref)(void);
+#endif
 static __attribute__((noinline, cold, minsize)) void boot_draw(void)
 {
     /* 3310 boot: a classic phone standby screen. Signal bars on the left and
@@ -1612,6 +1621,9 @@ void groove_screen_init(void)
 {
     track = cursor = drum = writing = fm_group = op = 0;
     hlv_init();
+#ifndef FM1_HOST_TEST
+    ble_keep_ref = ble_keep;
+#endif
     page = music_page = HLV; /* 3310 opens on ARRANGE. */
     subpage_return = project_return = HLV; rec_before_press = OVERVIEW;
     rec_down = rec_used = 0;

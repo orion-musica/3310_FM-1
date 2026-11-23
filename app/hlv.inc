@@ -311,73 +311,57 @@ static void hlv_param_turn(unsigned p, int delta, uint32_t now)
         break;
     }
 }
-static void hlv_percent(char out[12], unsigned value)
-{
-    decimal(out, (int)value, 1);
-    strcat(out, "%");
-}
 static void hlv_param_value(unsigned p, const struct groove_view *v, char out[12])
 {
-    unsigned t = track;
-    out[0] = 0;
+    unsigned t = track, type = groove_source_type(t);
+    int value = 0, pct = -1; /* pct: value is shown with % */
+    const char *word = 0;
     switch (p) {
     case HLV_P_HITS:
-        if (hlv_hits[t] == HLV_ORIG) { strcpy(out, "ORIG"); break; }
-        decimal(out, hlv_hits[t], 1);
-        strcat(out, "/");
-        decimal(out + strlen(out), (int)hlv_length(t), 1);
+        if (hlv_hits[t] == HLV_ORIG) word = "ORIG";
+        else value = hlv_hits[t];
         break;
-    case HLV_P_ROTATE:
-        if (hlv_rot[t]) { out[0] = '+'; decimal(out + 1, hlv_rot[t], 1); }
-        else strcpy(out, "0");
-        break;
+    case HLV_P_ROTATE: value = hlv_rot[t]; break;
     case HLV_P_MUTATE:
-        if (!hlv_mut[t]) strcpy(out, "HOLD");
-        else {
-            strcpy(out, hlv_mut[t] < 0 ? "ERODE " : "EVOLV ");
-            decimal(out + 6, hlv_mut[t] < 0 ? -hlv_mut[t] : hlv_mut[t], 1);
-        }
+        value = hlv_mut[t];
+        if (!value) word = "HOLD";
         break;
     case HLV_P_GATE:
-        if (groove_pad_count(t)) strcpy(out, "--");
-        else hlv_percent(out, hlv_gate[t] == 15 ? 100U : (hlv_gate[t] * 100U + 8U) / 16U);
+        if (groove_pad_count(t)) word = "--";
+        else pct = hlv_gate[t] == 15 ? 100 : (hlv_gate[t] * 100 + 8) / 16;
         break;
-    case HLV_P_SWING:
-        hlv_percent(out, groove_sequence_setting(0));
-        break;
-    case HLV_P_CHANCE:
-        hlv_percent(out, hlv_chance[t] == 8 ? 100U : (hlv_chance[t] * 100U + 4U) / 8U);
-        break;
+    case HLV_P_SWING: pct = (int)groove_sequence_setting(0); break;
+    case HLV_P_CHANCE: pct = (hlv_chance[t] * 100 + 4) / 8; break;
     case HLV_P_CUTOFF:
-        if (groove_source_type(t) == GROOVE_DX7) strcpy(out, "--");
-        else if (!hlv_cut[t]) strcpy(out, "0");
-        else { if (hlv_cut[t] > 0) { out[0] = '+'; out[1] = 0; } decimal(out + strlen(out), hlv_cut[t], 1); }
+        if (type == GROOVE_DX7) word = "--";
+        else value = hlv_cut[t];
         break;
     case HLV_P_PUNCH: {
-        if (groove_source_type(t) != GROOVE_DX7) { strcpy(out, "--"); break; }
         struct groove_fm_controls controls;
         memset(&controls, 0, sizeof controls);
-        if (groove_fm_copy(t, hlv_patch, &controls) || !controls.enabled) strcpy(out, "PATCH");
-        else decimal(out, controls.envelope[1], 1);
+        if (type != GROOVE_DX7) word = "--";
+        else if (groove_fm_copy(t, hlv_patch, &controls) || !controls.enabled) word = "PATCH";
+        else value = controls.envelope[1];
         break;
     }
     case HLV_P_THROW:
-        if (!hlv_throw_amount[t]) strcpy(out, "OFF");
-        else hlv_percent(out, (hlv_throw_amount[t] * 100U + 7U) / 15U);
+        if (!hlv_throw_amount[t]) word = "OFF";
+        else pct = (hlv_throw_amount[t] * 100 + 7) / 15;
         break;
     case HLV_P_REVERB: {
         uint8_t sends[2];
         groove_sends_get(t, sends);
-        hlv_percent(out, (sends[0] * 100U + 7U) / 15U);
+        pct = (sends[0] * 100 + 7) / 15;
         break;
     }
-    case HLV_P_VOLUME:
-        decimal(out, v->volume, 1);
-        break;
-    default:
-        strcpy(out, "--");
-        break;
+    default: value = v->volume; break;
     }
+    if (word) { strcpy(out, word); return; }
+    if (pct >= 0) { decimal(out, pct, 1); strcat(out, "%"); return; }
+    /* Signed values: MUTATE is negative for ERODE, positive for EVOLVE. */
+    out[0] = 0;
+    if (value > 0 && p != HLV_P_HITS && p != HLV_P_VOLUME && p != HLV_P_PUNCH) strcpy(out, "+");
+    decimal(out + strlen(out), value, 1);
 }
 
 /* ---- Controls ----------------------------------------------------------- */
@@ -524,79 +508,52 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
 {
     /* x 30..209 / 8..231, y 48..175: whole 16-row bands. */
     if (paint_rendering && (paint_top >= 176 || paint_top + PAINT_ROWS <= 48)) return;
-    unsigned active = hlv_box_active();
+    unsigned active = hlv_box_active(), k = hlv_edit_knob;
     uint32_t sig = active | (hlv_note_kind << 1) | (hlv_mode << 4) | (hlv_edit_down << 6) |
-        ((uint32_t)hlv_edit_knob << 7) | ((uint32_t)hlv_pending[0] << 9) | ((uint32_t)hlv_pending[1] << 13) |
+        ((uint32_t)k << 7) | ((uint32_t)hlv_pending[0] << 9) | ((uint32_t)hlv_pending[1] << 13) |
         ((uint32_t)hlv_pending[2] << 17) | ((uint32_t)v->program << 21);
     if (sig == cache->hlv[HLV_C_BOX]) return;
     cache->hlv[HLV_C_BOX] = sig;
     if (!active) return; /* Rows repaint themselves when the box closes. */
-    if (hlv_edit_down && hlv_mode == HLV_USER && hlv_edit_knob < 3) {
-        unsigned k = hlv_edit_knob, current = hlv_pending[k];
+    if (hlv_edit_down && hlv_mode == HLV_USER && k < 3) {
+        /* USER edit list: eight of the eleven parameters around the pick. */
+        unsigned current = hlv_pending[k];
         paint_fill(8, 48, 224, 128, BACK);
         frame(8, 48, 224, 128, mc);
-        paint_fill(8, 48, 224, 14, mc);
-        char title[16] = "K2 > ";
-        title[1] = (char)('2' + k);
-        strcat(title, hlv_param_names[current]);
-        text(14, 52, title, 1, BACK, mc);
         int first = clamp((int)current - 4, 0, HLV_PARAMS - 8);
         for (unsigned r = 0; r < 8; ++r) {
-            unsigned p = (unsigned)first + r, y = 66 + r * 13;
-            uint16_t bg = p == current ? mc : BACK, fg = p == current ? BACK : TEXT;
-            paint_fill(10, y - 2, 220, 12, bg);
+            unsigned p = (unsigned)first + r, y = 54 + r * 15, on = p == current;
+            uint16_t bg = on ? mc : BACK, fg = on ? BACK : TEXT;
+            paint_fill(10, y - 3, 220, 13, bg);
             text(16, y, hlv_param_names[p], 1, fg, bg);
-            text(104, y, hlv_param_groups[p], 1, p == current ? BACK : DIM, bg);
-            const char *tag = "";
+            text(104, y, hlv_param_groups[p], 1, on ? BACK : DIM, bg);
             for (unsigned j = 0; j < 3; ++j)
-                if (j != k && hlv_pending[j] == p) tag = j == 0 ? "K2" : j == 1 ? "K3" : "K4";
-            if (!*tag && hlv_user[k] == p) tag = "NOW";
-            text(204, y, tag, 1, fg, bg);
+                if (hlv_pending[j] == p) { char tag[3] = {'K', (char)('2' + j), 0}; text(204, y, tag, 1, fg, bg); }
         }
         return;
     }
-    paint_fill(30, 64, 180, 96, hlv_edit_down ? BACK : hlv_note_kind == HLV_NOTE_MODE ||
-               hlv_note_kind == HLV_NOTE_SAVED ? mc : PANEL);
-    if (hlv_edit_down) {
-        frame(30, 64, 180, 96, mc);
-        hlv_center(72, hlv_mode == HLV_USER ? "EDIT MAP - USER" : "EDIT - USER ONLY", 1, mc, BACK);
-        if (hlv_mode == HLV_USER) {
-            hlv_center(92, "TURN K2 K3 K4: PICK", 1, TEXT, BACK);
-            hlv_center(108, "RELEASE EDIT: SAVE", 1, TEXT, BACK);
-            hlv_center(124, "EDIT + PLAY: CANCEL", 1, TEXT, BACK);
-            hlv_center(140, "SAME PARAM: KNOBS SWAP", 1, DIM, BACK);
-        } else {
-            hlv_center(100, "K1 > USER TO EDIT KNOBS", 1, TEXT, BACK);
-            hlv_center(120, "RELEASE EDIT: BACK", 1, DIM, BACK);
-        }
-        return;
+    /* Notes: a small title, a big middle line and a small hint. */
+    static const char *const tops[] = {"MODE", "USER", "USER", "USER", "PRESET"};
+    static const char *const mids[] = {"", "SAVED", "CANCELLED", "USER ONLY", ""};
+    static const char *const subs[] = {"", "NEW KNOB MAP KEPT", "OLD KNOB MAP BACK", "K1 > USER TO EDIT", ""};
+    unsigned kind = hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
+    const char *top = tops[kind], *mid = mids[kind], *sub = subs[kind];
+    char line[28];
+    if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K2-K4"; sub = "RELEASE SAVE / +PLAY CANCEL"; }
+    else if (kind == HLV_NOTE_MODE) {
+        mid = hlv_mode_names[hlv_mode]; big = 3;
+        line[0] = 0;
+        for (unsigned i = 0; i < 3; ++i) { strcat(line, hlv_param_names[hlv_map()[i]]); strcat(line, " "); }
+        sub = line;
+    } else if (kind == HLV_NOTE_PRESET) {
+        decimal(line, v->program + 1, 3); mid = line; big = 3;
+        sub = hlv_source_short(v->type);
     }
-    uint16_t bg = hlv_note_kind == HLV_NOTE_MODE || hlv_note_kind == HLV_NOTE_SAVED ? mc : PANEL;
-    uint16_t fg = bg == PANEL ? TEXT : BACK;
-    if (hlv_note_kind == HLV_NOTE_MODE) {
-        char top[8] = "MODE 1";
-        top[5] = (char)('1' + hlv_mode);
-        hlv_center(74, top, 1, fg, bg);
-        hlv_center(94, hlv_mode_names[hlv_mode], 3, fg, bg);
-        char hint[24] = "";
-        for (unsigned i = 0; i < 3; ++i) {
-            if (i) strcat(hint, " ");
-            strcat(hint, hlv_param_names[hlv_map()[i]]);
-        }
-        hlv_center(132, hint, 1, fg, bg);
-    } else if (hlv_note_kind == HLV_NOTE_PRESET) {
-        hlv_center(78, "PRESET", 1, fg, bg);
-        char out[12];
-        decimal(out, v->program + 1, 3);
-        hlv_center(98, out, 3, fg, bg);
-        hlv_center(132, hlv_source_short(v->type), 1, fg, bg);
-    } else {
-        static const char *const titles[] = {"", "SAVED", "CANCELLED", "USER ONLY"};
-        static const char *const subs[] = {"", "NEW KNOB MAP KEPT", "OLD KNOB MAP BACK", "K1 > USER TO EDIT"};
-        hlv_center(80, "USER", 1, fg, bg);
-        hlv_center(98, titles[hlv_note_kind], 2, fg, bg);
-        hlv_center(128, subs[hlv_note_kind], 1, fg, bg);
-    }
+    uint16_t bg = kind == HLV_NOTE_MODE || kind == HLV_NOTE_SAVED ? mc : PANEL, fg = bg == PANEL ? TEXT : BACK;
+    paint_fill(30, 64, 180, 96, bg);
+    hlv_center(76, top, 1, fg, bg);
+    hlv_center(96, mid, big, fg, bg);
+    hlv_center(136, sub, 1, fg, bg);
 }
 static void hlv_draw(const struct groove_view v[8])
 {

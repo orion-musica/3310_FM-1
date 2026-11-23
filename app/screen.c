@@ -743,7 +743,7 @@ static __attribute__((noinline)) void track_lfo_draw(void)
     text(8, 100, v[2] ? "STEREO PAN" : "VOLUME TREMOLO", 2, TEXT, BACK);
     text(8, 140, "K1 RATE    K2 DEPTH", 1, DIM, BACK);
     text(8, 159, "K3 TARGET  K4 WAVE", 1, DIM, BACK);
-    text(8, 181, "KEYS PLAY  SELECT TRACK", 1, DIM, BACK);
+    text(8, 181, "KEYS PLAY  SEL TRACK", 1, DIM, BACK);
     static const char *const labels[] = {"RATE Hz", "DEPTH", "TARGET", "WAVE"};
     static const char *const waves[] = {"TRI", "SQUARE", "SAW UP", "SAW DOWN"};
     for (unsigned i = 0; i < 4; ++i) {
@@ -804,13 +804,13 @@ static __attribute__((noinline)) void tone_draw(const uint8_t values[GROOVE_TONE
                                                           : groove_pad_name(track, part),
              1, TEXT, BACK);
         text(8, 181,
-             page == FM_ENV ? (groove_pad_count(track) ? "PRESETS PART  KEYS PLAY" : "KEYS PLAY  SELECT TRACK")
-             : type == GROOVE_PSG     ? "KEYS PLAY  PRESETS MODE"
+             page == FM_ENV ? (groove_pad_count(track) ? "PRE PART  KEYS PLAY" : "KEYS PLAY  SEL TRACK")
+             : type == GROOVE_PSG     ? "KEYS PLAY  PRE MODE"
              : type == GROOVE_PLUCK ? "KEYS PLAY  KNOBS EDIT"
              : type == GROOVE_303
                  ? (view.mono ? "MONO SLIDE  MONO/POLY KEYS" : "POLY 4      MONO/POLY KEYS")
              : type == GROOVE_SAMPLE ? "8 WHITE KEYS PLAY / SELECT"
-                                     : page == FM_ENV ? "PRESETS DRUM  KEYS PLAY" : "PRESETS DRUM / KIT  KEYS PLAY",
+                                     : page == FM_ENV ? "PRE DRUM  KEYS PLAY" : "PRE DRUM / KIT  KEYS PLAY",
              1, DIM, BACK);
         memset(cache->tile_cache, 0xff, sizeof cache->tile_cache);
     }
@@ -908,13 +908,13 @@ static __attribute__((noinline)) void project_draw(void)
         cache->row_cache[0] = sig;
         paint_fill(8, 126, 224, 26, BACK);
         text(8, 126, project_reload ? "OVERWRITE?" : "SAVE WRITE PROJECT", 1, TEXT, BACK);
-        text(8, 145, project_reload ? "SAVE CONFIRM  HOME CANCEL" : "K1 CURSOR  K2 LETTER", 1, DIM, BACK);
+        text(8, 145, project_reload ? "SAVE CONFIRM  HOME X" : "K1 CURSOR  K2 LETTER", 1, DIM, BACK);
     }
     if (cache->hint_cache != 1U) {
         cache->hint_cache = 1U;
         text(8, 59, "WORKING NAME", 1, DIM, BACK);
         text(8, 105, "SEL/PRE SLOT", 1, DIM, BACK);
-        text(8, 224, "HOME CANCEL  EDIT SOUND", 1, DIM, BACK);
+        text(8, 224, "HOME X  EDIT SOUND", 1, DIM, BACK);
     }
     sig = (unsigned)(project_result + 16) | (project_operation << 16);
     if (cache->row_cache[1] == sig) return;
@@ -944,7 +944,7 @@ static __attribute__((noinline)) void preset_draw(void)
     number(8, 65, preset_slot + 1, 2, 2, ACCENT, BACK);
     text(38, 65, "/16", 2, DIM, BACK);
     text(8, 97, project_stored_result < 0 ? "READ ERROR" : project_stored, 2, TEXT, BACK);
-    text(8, 127, "SELECT / PRESETS LOAD", 1, TEXT, BACK);
+    text(8, 127, "SELECT / PRE LOAD", 1, TEXT, BACK);
     text(8, 148, "PLAY LOAD + RUN   SAVE PROJECT", 1, TEXT, BACK);
     text(8, 170, "KEYS 1-16 LOAD", 1, DIM, BACK);
     text(8, 191, "K1 BANK: USER / FACTORY", 1, DIM, BACK);
@@ -1111,7 +1111,7 @@ static __attribute__((noinline)) void edit_page_draw(unsigned visible)
     if (visible == SOURCE) {
         text(8, 42, "SELECT SOUND SOURCE", 1, TEXT, BACK);
         text(8, 78, source_names[source_preview], 2, ACCENT, BACK);
-        text(8, 120, "SAVE APPLY  HOME CANCEL", 1, TEXT, BACK);
+        text(8, 120, "SAVE APPLY  HOME X", 1, TEXT, BACK);
         text(8, 148, "RESETS TIMBRE", 1, DIM, BACK);
         text(8, 165, "CLEARS STEPS", 1, AMBER, BACK);
         text(8, 196, source_result ? "MEMORY FULL" : "UNDO IN HOLD SEQ MENU", 1, source_result ? AMBER : DIM, BACK);
@@ -1133,13 +1133,13 @@ static __attribute__((noinline)) void edit_page_draw(unsigned visible)
             text(10, y + 5, actions[at], 1, at == action ? ACCENT : DIM, bg);
         }
         text(8, 213, notice ? notice : "SELECT ACTION  SAVE EXECUTE", 1, TEXT, BACK);
-        text(8, 231, action_confirm ? "SAVE CONFIRM   HOME CANCEL" : "PRESETS STEP  OCT PAGE  SAVE DO", 1, DIM, BACK);
+        text(8, 231, action_confirm ? "SAVE CONFIRM   HOME X" : "PRE STEP  OCT PAGE  SAVE DO", 1, DIM, BACK);
     } else if (visible == ARP_EDIT) {
         text(8, 40, "ARPEGGIATOR", 2, ACCENT, BACK);
         text(184, 40, "T", 2, colors[track], BACK);
         number(198, 40, track + 1, 1, 2, colors[track], BACK);
         text(8, 72, !groove_arp_enabled(track) ? "OFF" : groove_arp_setting(track, 5) ? "ON - LATCH" : "ON", 1, TEXT, BACK);
-        text(8, 96, "SELECT TRACK  K1-K4 ADJUST", 1, DIM, BACK);
+        text(8, 96, "SEL TRACK  K1-K4 ADJUST", 1, DIM, BACK);
         text(8, 118, "RATE = BPM", 1, DIM, BACK);
         text(8, 140, arp_page ? "RELEASE KEYS" : groove_pad_count(track) ? "DRUMS: N/A" : "UP / DOWN / UP-DOWN / RANDOM", 1, DIM, BACK);
         text(8, 162, "SAVED IN PROJECT", 1, DIM, BACK);
@@ -1168,7 +1168,7 @@ static __attribute__((noinline)) void edit_page_draw(unsigned visible)
         text(26, 76, "/128", 1, DIM, BACK);
         text(56, 76, frame_views[track].modified ? "*" : " ", 1, AMBER, BACK);
         text(70, 72, name, 2, TEXT, BACK);
-        text(8, 102, "PRESETS SELECT VOICE", 1, TEXT, BACK);
+        text(8, 102, "PRE SELECT VOICE", 1, TEXT, BACK);
         text(8, 126, "HOLD EDIT OPERATOR PARAMETERS", 1, DIM, BACK);
         text(8, 148, "ENV ENVELOPE    LFO MODULATION", 1, DIM, BACK);
         text(8, 170, "SEL SCALING     KEYS PLAY", 1, DIM, BACK);
@@ -1264,7 +1264,7 @@ static void draw_page_body(const struct fm1_ble_status *ble)
         effects_draw();
         if (cache->hint_cache != 1U) {
             cache->hint_cache = 1U;
-            text(8, 231, "SELECT TRACK  PRESETS PAGE", 1, DIM, BACK);
+            text(8, 231, "SEL TRACK  PRE PAGE", 1, DIM, BACK);
         }
         return;
     }
@@ -1423,14 +1423,14 @@ static void draw_page_body(const struct fm1_ble_status *ble)
                                                              : "STEP REC  REC=END"
                        : 0 && (previous_buttons & BUTTON(HOME))
                            ? "PRE SOURCE  EDIT"
-                       : 0 ? "PRESETS PRESET  ALGO ENGINE"
+                       : 0 ? "PRE PRESET  ALGO ENGINE"
                        : visible == STEPS    ? "PRE STEP OCT PAGE"
                        : visible == MIX      ? "KEYS MUTE/SOLO"
                        : visible == FM_EDIT  ? "BLACK OP  EDIT BACK"
-                       : visible == FM_ENV && v->type != GROOVE_DX7 ? "ENV BACK  SELECT TRACK"
+                       : visible == FM_ENV && v->type != GROOVE_DX7 ? "ENV BACK  SEL TRACK"
                        : visible == FM_ENV   ? "PRE ENV  HOME TRK"
                        : visible == TONE_EDIT && !advanced_edit
-                           ? "HOLD EDIT MORE  SELECT TRACK"
+                           ? "HOLD EDIT MORE  SEL TRACK"
                            : "SEL PAGE  HOME TRACKS";
     uint32_t hint_sig = signature(0, hint, (unsigned)strlen(hint));
     if (hint_sig != cache->hint_cache) {

@@ -310,7 +310,7 @@ in the firmware today.** The other screens use FM1 Open's own pages for now.
 <td align="center"><img src="docs/design/10-patterns-clips.png" width="200" alt="Patterns concept"><br><sub>Patterns · clips</sub></td>
 <td align="center"><img src="docs/design/11-song.png" width="200" alt="Song concept"><br><sub>Song</sub></td>
 <td align="center"><img src="docs/design/17-fx.png" width="200" alt="FX concept"><br><sub>FX</sub></td>
-<td align="center"><img src="docs/design/18-master.png" width="200" alt="Master concept"><br><sub>Master</sub></td>
+<td align="center"><img src="docs/design/12-arpeggio-arp-hold.png" width="200" alt="Arpeggio concept"><br><sub>Arpeggio</sub></td>
 </tr>
 </table>
 

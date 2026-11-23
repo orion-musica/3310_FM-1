@@ -34,9 +34,6 @@ enum { HLV_NOTE_MODE, HLV_NOTE_SAVED, HLV_NOTE_CANCEL, HLV_NOTE_USER_ONLY, HLV_N
 static const char *const hlv_param_names[HLV_PARAMS] = {
     "HITS", "ROTATE", "MUTATE", "GATE", "SWING", "CHANCE",
     "CUTOFF", "PUNCH", "THROW", "REVERB", "VOLUME"};
-static const char *const hlv_param_groups[HLV_PARAMS] = {
-    "RHYTHM", "RHYTHM", "RHYTHM", "GROOVE", "GROOVE", "GROOVE",
-    "SOUND", "SOUND", "FX", "FX", "FX"};
 static const char *const hlv_mode_names[HLV_MODES] = {"RHYTHM", "GROOVE", "SPACE", "USER"};
 /* Red, amber, cyan and the USER mode's young-grass green (RGB565). */
 /* 3310: every mode uses the LCD ink; the mode chip names the mode. */
@@ -526,7 +523,6 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
             uint16_t bg = on ? mc : BACK, fg = on ? BACK : TEXT;
             paint_fill(10, y - 3, 220, 13, bg);
             text(16, y, hlv_param_names[p], 1, fg, bg);
-            text(104, y, hlv_param_groups[p], 1, on ? BACK : DIM, bg);
             for (unsigned j = 0; j < 3; ++j)
                 if (hlv_pending[j] == p) { char tag[3] = {'K', (char)('2' + j), 0}; text(204, y, tag, 1, fg, bg); }
         }
@@ -535,7 +531,7 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     /* Notes: a small title, a big middle line and a small hint. */
     static const char *const tops[] = {"MODE", "USER", "USER", "USER", "PRESET"};
     static const char *const mids[] = {"", "SAVED", "CANCELLED", "USER ONLY", ""};
-    static const char *const subs[] = {"", "NEW KNOB MAP KEPT", "OLD KNOB MAP BACK", "K1 > USER TO EDIT", ""};
+    static const char *const subs[] = {"", "", "", "K1 > USER", ""};
     unsigned kind = hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
     const char *top = tops[kind], *mid = mids[kind], *sub = subs[kind];
     char line[28];
@@ -576,29 +572,10 @@ static void hlv_draw(const struct groove_view v[8])
             paint_fill(222, 8, 12, 12, lit_frame ? mc : PANEL);
         }
     }
-    /* Info line: selected track, its sound and length. */
-    if (!(paint_rendering && (paint_top >= 43 || paint_top + PAINT_ROWS <= 32))) {
-        uint32_t sig = track | ((uint32_t)sel->type << 3) | ((uint32_t)sel->program << 6) |
-            ((uint32_t)sel->next_length << 13) | ((uint32_t)sel->play_step << 20) | (mode << 27) |
-            ((uint32_t)sel->playing << 29);
-        if (sig != cache->hlv[HLV_C_INFO]) {
-            cache->hlv[HLV_C_INFO] = sig;
-            paint_fill(0, 32, 240, 11, BACK);
-            text(8, 34, "T", 1, mc, BACK);
-            number(14, 34, track + 1, 1, 1, mc, BACK);
-            text(28, 34, hlv_source_short(sel->type), 1, TEXT, BACK);
-            text(52, 34, "P", 1, DIM, BACK);
-            number(58, 34, sel->program + 1, 3, 1, TEXT, BACK);
-            text(124, 34, "LEN", 1, DIM, BACK);
-            number(144, 34, sel->next_length, 2, 1, sel->next_length != sel->sequence_length ? AMBER : TEXT, BACK);
-            text(170, 34, "STEP", 1, DIM, BACK);
-            number(196, 34, sel->playing ? sel->play_step + 1 : 0, 2, 1, sel->playing ? TEXT : DIM, BACK);
-        }
-    }
     /* Eight rows: phone icon (inverts on hits), source, 4 sections x 4 bars. */
     for (unsigned t = 0; t < 8; ++t) {
         unsigned y = 46 + t * 16;
-        if (paint_rendering && (y >= paint_top + PAINT_ROWS || y + 14 <= paint_top)) continue;
+        if (paint_rendering && (y >= paint_top + PAINT_ROWS || y + 14 <= paint_top) && (t || paint_top != 32)) continue;
         unsigned length = v[t].sequence_length ? v[t].sequence_length : 16;
         uint32_t bars = 0;
         for (unsigned b = 0; b < 16; ++b)
@@ -611,7 +588,7 @@ static void hlv_draw(const struct groove_view v[8])
         uint32_t sig = signature(meta, &bars, sizeof bars);
         if (sig == cache->hlv[HLV_C_ROW + t]) continue;
         cache->hlv[HLV_C_ROW + t] = sig;
-        paint_fill(0, y, 240, 14, BACK);
+        paint_fill(0, t ? y : 30, 240, t ? 14 : 30, BACK); /* row 0 also clears the gap above */
         if (t == track) paint_fill(0, y, 3, 14, mc);
         uint16_t bg = lit ? mc : PANEL;
         hlv_icon(6, y, t, lit ? BACK : TEXT, bg); /* 2-frame: inverts on hits */

@@ -5,14 +5,13 @@
 #include "fm1_engine_control.h"
 #include <string.h>
 enum {
-    /* 3310: two-tone monochrome LCD. Light green-grey ground, dark pixels. */
-    BACK = 0xc79b,   /* LCD ground  #c7f0d8 */
-    PANEL = 0xaeb7,  /* off cells   #aed4ba */
-    TEXT = 0x4287,   /* pixels      #43523d */
-    ACCENT = 0x4287,
-    DIM = 0x8531,    /* half tone   #87a68e */
-    GREEN = 0x4287,
-    AMBER = 0x4287
+    BACK = 0x0000,
+    PANEL = 0x18e3,
+    TEXT = 0xef5d,
+    ACCENT = 0x07ff,
+    DIM = 0x738e,
+    GREEN = 0x07e0,
+    AMBER = 0xfd20
 };
 /* Five columns per glyph, bit 0 at the top. Digits followed by uppercase. */
 static const uint8_t font[36][5] = {
@@ -124,14 +123,10 @@ static void text(unsigned x, unsigned y, const char *s, unsigned scale, uint16_t
 }
 /* Eight tracks stay visible on HOME. SEQ maps the sixteen white keys to one
  * quarter of the 64-step pattern. All drawing and edits run on app_control. */
-enum { OVERVIEW, STEPS, FM_EDIT, FM_ENV, FM_LFO, TONE_EDIT, MIX, BLE, PROJECT, NAME, EFFECTS, SOURCE, ACTIONS, STEP_EDIT, RHYTHM, FM_QUICK, PRESET_BROWSER, ARP_EDIT, STARTUP, HLV };
+enum { OVERVIEW, STEPS, FM_EDIT, FM_ENV, FM_LFO, TONE_EDIT, MIX, BLE, PROJECT, NAME, EFFECTS, SOURCE, ACTIONS, STEP_EDIT, RHYTHM, FM_QUICK, PRESET_BROWSER, ARP_EDIT, STARTUP };
 enum { OCT_DOWN, OCT_UP, FX, SCL, ENV, LFO, EDIT, GLO, HOME, SAVE, ARP, SEQ, PLAY, REC };
 #define BUTTON(b) (1U << (b))
-/* 3310 ARRANGE page (hlv.inc). */
-struct groove_view;
-static void hlv_init(void);
-static void hlv_draw(const struct groove_view v[8]);
-static const uint16_t colors[8] = {0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287}; /* 3310: one ink */
+static const uint16_t colors[8] = {0x3c9f, 0x07bf, 0x4eae, 0x06d4, 0xac9f, 0xed18, 0xff06, 0xfba5};
 static const uint8_t white_keys[16] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26};
 /* FM1 EDIT key IDs 15,17,19,22,24,27,29,31,34,36 minus 14. */
 static const uint8_t edit_keys[10] = {1, 3, 5, 8, 10, 13, 15, 17, 20, 22};
@@ -245,7 +240,6 @@ struct draw_cache {
     uint32_t header_cache, title_cache, middle_cache, hint_cache, hold_cache, seq_cache;
     uint32_t foot_cache[4], row_cache[8], middle_shape, cell_cache[8][16], tile_cache[16];
     unsigned meter_cache[8];
-    uint32_t hlv[16]; /* 3310 ARRANGE page, see hlv.inc */
 };
 static struct draw_cache saved_cache, band_cache, *cache = &saved_cache;
 static uint32_t led_cache;
@@ -1233,7 +1227,7 @@ static void leds(const struct groove_view *v, unsigned visible)
         | ((visible == OVERVIEW) << HOME) | ((visible == EFFECTS) << FX)
         | ((groove_arp_enabled(track) != 0) << ARP)
         | ((visible == FM_EDIT && (fm_group == 4 || fm_group == 5)) << SCL)
-        | ((visible == STEPS || visible == ACTIONS || visible == STEP_EDIT || visible == RHYTHM || visible == HLV) << SEQ)
+        | ((visible == STEPS || visible == ACTIONS || visible == STEP_EDIT || visible == RHYTHM) << SEQ)
         | ((writing != 0) << REC)
         | ((v->playing != 0) << PLAY) | ((visible == MIX) << GLO)
         | ((visible == FM_EDIT || visible == TONE_EDIT || visible == FM_QUICK || visible == STEP_EDIT) << EDIT)
@@ -1343,35 +1337,20 @@ static __attribute__((noinline)) void edit_page_draw(unsigned visible)
 }
 static __attribute__((noinline, cold, minsize)) void boot_draw(void)
 {
-    /* 3310 boot: a classic phone standby screen. Signal bars on the left and
-     * battery bars on the right fill up while the engine starts. No logos. */
     if (cache->title_cache != 0) {
         cache->title_cache = 0;
-        /* Antenna glyph and battery cap. */
-        paint_fill(10, 14, 2, 14, TEXT);
-        paint_fill(6, 14, 10, 2, TEXT);
-        paint_fill(8, 16, 2, 2, TEXT);
-        paint_fill(12, 16, 2, 2, TEXT);
-        frame(222, 14, 12, 16, TEXT);
-        paint_fill(225, 11, 6, 3, TEXT);
-        text(72, 66, "3310", 4, TEXT, BACK);
-        text(75, 108, "HYPNOTIC TECHNO", 1, TEXT, BACK);
-        text(87, 122, "8 TRACKS FM", 1, DIM, BACK);
-        text(96, 198, "MENU", 2, TEXT, BACK);
-        text((240 - 6 * (sizeof "FM1 OPEN " FM1_RELEASE_VERSION - 1)) / 2, 226, "FM1 OPEN " FM1_RELEASE_VERSION, 1, DIM, BACK);
+        text(86, 48, "FM1", 4, TEXT, BACK);
+        text(81, 98, "OFFICIAL OPEN", 1, ACCENT, BACK);
+        text((240 - 12 * (sizeof FM1_RELEASE_VERSION - 1)) / 2, 120,
+             FM1_RELEASE_VERSION, 2, TEXT, BACK);
+        text(102, 208, "M-VAVE", 1, DIM, BACK);
     }
     if (cache->middle_cache == boot_phase) return;
     cache->middle_cache = boot_phase;
-    /* Four signal bars (left) and four battery bars (right), bottom up. */
-    unsigned bars = boot_phase / 2U;
-    for (unsigned i = 0; i < 4; ++i) {
-        unsigned y = 150 - i * 26, w = 6 + i * 4;
-        uint16_t color = i < bars ? TEXT : PANEL;
-        paint_fill(6, y, w, 18, color);
-        paint_fill(234 - w, y, w, 18, color);
-    }
-    /* Two-frame blink of the cursor under the title. */
-    paint_fill(114, 140, 12, 3, boot_phase & 1U ? TEXT : BACK);
+    static const uint8_t height[8] = {8, 18, 30, 42, 42, 30, 18, 8};
+    for (unsigned i = 0; i < 8; ++i)
+        paint_fill(58 + 16 * i, 166 - height[i] / 2, 12, height[i],
+                   i < boot_phase ? colors[i] : PANEL);
 }
 static void draw_page_body(const struct fm1_ble_status *ble)
 {
@@ -1386,17 +1365,12 @@ static void draw_page_body(const struct fm1_ble_status *ble)
         memset(cache->cell_cache, 0xff, sizeof cache->cell_cache);
         memset(cache->tile_cache, 0xff, sizeof cache->tile_cache);
         memset(cache->meter_cache, 0xff, sizeof cache->meter_cache);
-        memset(cache->hlv, 0xff, sizeof cache->hlv);
         if (visible == PROJECT || visible == PRESET_BROWSER)
             text(8, 8, visible == PROJECT ? "SAVE PROJECT" : "PRESETS", 2, ACCENT, BACK);
     }
     if (visible == STARTUP) { boot_draw(); return; }
     const struct groove_view *views = frame_views, *v = &views[track];
     if (!paint_rendering) leds(v, visible);
-    if (visible == HLV) {
-        hlv_draw(views);
-        return;
-    }
     if (visible == PRESET_BROWSER) {
         preset_draw();
         return;
@@ -1754,7 +1728,7 @@ static int preset_load(unsigned start, uint32_t now)
     memset(tone_pages, 0, sizeof tone_pages);
     memset(drum_parts, 0, sizeof drum_parts);
     selected_note = groove_pad_count(track) ? groove_pad_note(track, 0) : 60;
-    page = music_page = HLV;
+    page = music_page = OVERVIEW;
     notice = start ? "PRESET LOADED - PLAYING" : "PRESET LOADED - PLAY TO START";
     notice_until = now + 2000U;
     if (start) {
@@ -1779,10 +1753,8 @@ static void toggle_step(unsigned step)
 }
 void groove_screen_init(void)
 {
-    track = cursor = drum = writing = fm_group = op = 0;
-    hlv_init();
-    page = music_page = HLV; /* 3310 opens on ARRANGE. */
-    subpage_return = project_return = rec_before_press = OVERVIEW;
+    track = cursor = drum = writing = page = fm_group = op = 0;
+    music_page = subpage_return = project_return = rec_before_press = OVERVIEW;
     rec_down = rec_used = 0;
     selected_note = 60;
     step_follow = 1;
@@ -1865,7 +1837,6 @@ void groove_screen_tap(uint32_t now)
     notice = bpm < 0 ? "TAP: EXTERNAL MIDI CLOCK" : bpm ? "TAP TEMPO APPLIED" : "TAP AGAIN / HOME+SEQ";
     notice_until = now + 1500U;
 }
-#include "hlv.inc"
 static int apply_controls(const struct fm1_controls *controls, uint32_t now,
                           const struct fm1_ble_status *ble)
 {
@@ -1894,7 +1865,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
     if (pressed & BUTTON(SEQ)) {
         seq_down = 1; seq_ms = now;
     }
-    if (page == OVERVIEW || page == STEPS || page == HLV) music_page = page;
+    if (page == OVERVIEW || page == STEPS) music_page = page;
     if (pressed & BUTTON(REC)) rec_before_press = writing;
     /* HOME defers REC until release so REC+SELECT never starts a take.
      * A held gesture preserves the previous recording state. */
@@ -1927,7 +1898,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
         blocked_keys |= controls->keys;
         if (!post(0xff, 0, 0, 1)) return 0;
         memset(key_note, 0xff, sizeof key_note); project_keys = 0;
-        page = music_page = HLV;
+        page = music_page = OVERVIEW;
         writing = glo_down = glo_used = project_reload = edit_down = edit_long = 0;
         arp_down = arp_long = seq_down = rec_down = 0;
         groove_edit_record(0, track, cursor);
@@ -1937,9 +1908,6 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
      * its editor is open. Leave editors that cannot apply to the new source. */
     if (page == NAME && groove_source_type(track) != GROOVE_DX7)
         page = OVERVIEW;
-    /* 3310: EDIT hold remaps USER knobs, EDIT+PLAY cancels. */
-    if (hlv_edit_gesture(controls, pressed, now, &play_handled))
-        goto controls_done;
     if ((controls->buttons & (BUTTON(HOME) | BUTTON(SAVE))) == (BUTTON(HOME) | BUTTON(SAVE)) &&
         (pressed & (BUTTON(HOME) | BUTTON(SAVE)))) {
         int r = groove_edit_undo();
@@ -2009,9 +1977,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
                 preset_refresh(); project_result = 0; page = PRESET_BROWSER;
             } else page = OVERVIEW;
         } else if (pressed & BUTTON(SEQ)) {
-            /* SEQ alternates ARRANGE (3310) and the step editor. */
-            if (page == HLV) { page = STEPS; seq_page = 0; step_follow = 1; cache->shown_page = ~0U; }
-            else page = HLV;
+            page = STEPS; seq_page = 0; step_follow = 1; cache->shown_page = ~0U;
         } else if (pressed & BUTTON(FX)) {
             if (page != EFFECTS) effects_page = 0;
             open_subpage(EFFECTS);
@@ -2084,10 +2050,6 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
         for (unsigned i = 0; i < 16; ++i)
             if ((key_down & ~blocked_keys) & (1U << white_keys[i]))
                 groove_mix_toggle(i & 7U, i >= 8);
-        goto controls_done;
-    }
-    if (page == HLV) {
-        hlv_controls(controls, now);
         goto controls_done;
     }
     if (page == OVERVIEW && !glo_down && controls->encoders[6]) {
@@ -2698,7 +2660,6 @@ void groove_screen_control(void)
     read_encoders(&controls, now, boundary);
     if (!apply_controls(&controls, now, &ble))
         return;
-    hlv_poll(now);
     /* Input changes do not wait for the animation timer. LCD work is bounded
      * separately and continues on later polls, even between animation frames. */
     if (now - frame_ms >= 33U || page != old_page || input_changed || saved_cache.shown_page == ~0U) {

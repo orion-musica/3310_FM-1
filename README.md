@@ -301,7 +301,7 @@ in the firmware today.** The other screens use FM1 Open's own pages for now.
 
 <table>
 <tr>
-<td align="center"><img src="docs/design/02-home-units.png" width="200" alt="Home units concept"><br><sub>Home units</sub></td>
+<td align="center"><img src="docs/design/01-boot-splash.png" width="200" alt="Boot concept"><br><sub>Boot</sub></td>
 <td align="center"><img src="docs/design/03-arrange-1-rhythm.png" width="200" alt="Arrange concept"><br><sub>Arrange</sub></td>
 <td align="center"><img src="docs/design/13-sound-fm6.png" width="200" alt="Sound FM6 concept"><br><sub>Sound · FM6</sub></td>
 <td align="center"><img src="docs/design/16-mixer.png" width="200" alt="Mixer concept"><br><sub>Mixer</sub></td>

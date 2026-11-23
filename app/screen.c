@@ -1221,6 +1221,7 @@ static __attribute__((noinline, cold, minsize)) void boot_draw(void)
 }
 static void draw_page_body(const struct fm1_ble_status *ble)
 {
+    (void)ble; /* 3310 has no Bluetooth page */
     unsigned visible = boot_active ? STARTUP : glo_down && glo_used ? MIX : page;
     if (visible != cache->shown_page) {
         cache->shown_page = visible;

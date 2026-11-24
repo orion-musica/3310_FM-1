@@ -35,10 +35,10 @@ section{padding:72px 0;border-bottom:1px solid var(--line)}
 /* hero */
 .hero{padding:64px 0 72px}
 .hero .grid{display:flex;flex-wrap:wrap;gap:48px;align-items:center}
-.hero .copy{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.hero .copy{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:28px}
 .kicker{font-family:var(--px);font-size:14px;letter-spacing:3px;color:var(--ink);margin:0}
 .hero h1{font-size:clamp(67px,11.2vw,134px);line-height:.9;margin:0;color:var(--ink)}
-.lead{font-size:20px;max-width:580px;margin:0}
+.lead{font-size:20px;line-height:1.7;max-width:580px;margin:0}
 .btns{display:flex;flex-wrap:wrap;gap:12px}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;font-family:var(--px);font-size:16px;text-decoration:none;border:3px solid var(--ink);color:var(--ink);background:transparent}
 .btn.primary{background:var(--ink);color:var(--bg)}
@@ -46,6 +46,7 @@ section{padding:72px 0;border-bottom:1px solid var(--line)}
 .btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
 .hero .grid{position:relative}
 .hero .copy{position:relative;z-index:1;max-width:520px}
+.hero .meta{flex-direction:column;gap:8px}
 .hero-art{position:absolute;right:0;top:64px;width:min(58%,760px);z-index:0;pointer-events:none}
 .hero-art img{width:100%;height:auto;display:block;image-rendering:pixelated}
 @media (max-width:900px){.hero-art{position:static;width:100%;margin-top:8px}.hero .grid{flex-direction:column}}

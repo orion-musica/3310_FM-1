@@ -117,6 +117,8 @@ td:first-child{font-family:var(--px);font-size:13px;color:var(--ink);white-space
 .recipe ol{margin:0;padding-left:20px;font-size:14px}
 footer{padding:32px 0 56px;font-size:14px;color:var(--dim)}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+.footnote{flex:1 1 100%;margin:8px 0 0;font-size:12px;font-style:italic;color:var(--dim)}
+.star{text-decoration:none;color:var(--ink);font-weight:600}
 .about{max-width:760px}
 </style>
 </head>
@@ -136,7 +138,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
     <div class="copy">
       <p class="kicker">HYPNOTIC TECHNO FIRMWARE · M-VAVE FM-1</p>
       <h1>3310</h1>
-      <p class="lead">Your FM-1, dressed as the phone everyone had. Eight FM tracks, patterns that mutate while they loop, two shades of green and a symbol for every track.</p>
+      <p class="lead">Your FM-1, dressed as the phone everyone<a href="#footnote" class="star" aria-label="footnote">*</a> had. Eight FM tracks, patterns that mutate while they loop, two shades of green and a symbol for every track.</p>
       <div class="btns">
         <a class="btn primary" href="#install">Install</a>
         <a class="btn" href="#manual">Manual</a>
@@ -420,8 +422,10 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
 
 <footer>
   <div class="wrap">
+
     <span>3310 · GPL-3.0 with the FM1 SDK linking exception · see THIRD_PARTY.md for all credits</span>
     <span>Not affiliated with M-VAVE or any phone maker · no phone maker's logo or name is used</span>
+  <p class="footnote" id="footnote">* Well, everyone old enough to remember it like I do: monophonic ringtones, Snake high scores, texts squeezed into 160 characters and a battery that lasted a week. Hello, fellow veterans of the mobile revolution.</p>
   </div>
 </footer>
 

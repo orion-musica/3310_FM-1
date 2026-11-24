@@ -35,7 +35,7 @@ section{padding:72px 0;border-bottom:1px solid var(--line)}
 /* hero */
 .hero{padding:64px 0 72px}
 .hero .grid{display:flex;flex-wrap:wrap;gap:48px;align-items:center}
-.hero .copy{flex:999 1 460px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.hero .copy{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .kicker{font-family:var(--px);font-size:14px;letter-spacing:3px;color:var(--ink);margin:0}
 .hero h1{font-size:clamp(84px,14vw,168px);line-height:.9;margin:0;color:var(--ink)}
 .lead{font-size:20px;max-width:580px;margin:0}
@@ -44,10 +44,8 @@ section{padding:72px 0;border-bottom:1px solid var(--line)}
 .btn.primary{background:var(--ink);color:var(--bg)}
 .btn.primary:hover{background:#000;color:var(--bg)}
 .btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
-.hero-art{flex:1 1 340px;display:flex;justify-content:center}
-.frame{width:100%;max-width:540px;padding:10px;border:6px solid var(--ink);border-radius:30px;background:var(--panel)}
-.frame-in{border:5px solid var(--ink);border-radius:20px;overflow:hidden}
-.frame img{width:100%;height:auto;display:block;image-rendering:pixelated}
+.hero-art{flex:1 1 560px;min-width:0;display:flex;justify-content:center}
+.hero-art img{width:100%;max-width:704px;height:auto;display:block;image-rendering:pixelated}
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--dim);margin:0;padding:0;list-style:none}
 .meta li::before{content:"■ ";color:var(--ink)}
 
@@ -146,7 +144,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
       <ul class="meta"><li>Free and open source (GPL-3.0)</li><li>Built on FM1 Open V14</li><li>Installs from Chrome or Edge</li></ul>
     </div>
     <div class="hero-art">
-      <div class="frame"><div class="frame-in"><img src="assets/lcd-hero.png" width="704" height="464" alt="Green LCD screen: pixel picture of a hand turning a knob on the M-VAVE FM-1"></div></div>
+      <img src="assets/lcd-hero.png" width="704" height="464" alt="Green LCD screen: pixel picture of a hand turning a knob on the M-VAVE FM-1">
     </div>
     </div>
   </div>

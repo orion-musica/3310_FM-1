@@ -73,7 +73,13 @@ No phone maker's logo or name is used anywhere.
 
 The tracks are the eight layers of a hypnotic techno track, top to bottom in the order a live set
 brings them in. **PRESETS** loads the next preset of the selected layer: a sound and a pattern made
-for that job, all in A minor. Sixteen factory sets (`HYPNOTIC 01` to `16`) load all eight at once.
+for that job, all in A minor. Sixteen factory sets (SAVE → 3 LOAD PRESET) load all eight at once.
+
+**Sixteen unsettling factory sets.** Dark kicks and drive, metallic bells and gongs, and in every set
+the ATMOS drone and the SEQ line pulled against the A minor floor: a half step up (Phrygian), a tritone
+away or a sour step down, at 126 to 140 BPM. BLACK PULSE, STATIC NERVE, HOLLOW CELL, DREAD PULSE,
+RUST ALARM, GHOST STATIC, VOID NERVE, HUSH ALARM, BLACK CELL, HOLLOW DREAD, RUST GHOST, CELL ALARM,
+STATIC HUSH, GHOST PULSE, DREAD VOID and HOLLOW RUST.
 
 | Layer | Engine | Presets | What it plays |
 |---|---|:---:|---|
@@ -187,9 +193,11 @@ so export them first.
 ## Using 3310
 
 The FM-1 starts on the ARRANGE page. **SEQ** switches between ARRANGE and FM1 Open's own step editor.
-**HOME** brings you back to ARRANGE from any page. On ARRANGE a short tap opens the project browser
-(the factory sets `HYPNOTIC 01` to `16` and your slots); holding it and turning K1 opens the mode
-slider. All other buttons work as in FM1 Open.
+**HOME** brings you back to ARRANGE from any page; on ARRANGE, holding it and turning K1 opens the
+mode slider. **SAVE** opens the project menu: 1 SAVE PROJECT, 2 LOAD PROJECT (your 16 slots),
+3 LOAD PRESET (the 16 factory sets) and 4 NEW PROJECT (the eight layer sounds with no notes, after a
+YES / NO question). SELECT, K1 or PRESETS move, keys 1–4 pick, SAVE opens, HOME goes back. All other
+buttons work as in FM1 Open.
 
 ### Knobs on the ARRANGE page
 
@@ -207,7 +215,7 @@ edge. Turning PRESETS shows the layer and the new preset number for a moment.
 
 ### Playing live
 
-1. Load a factory set, open the mixer (GLO tap) and mute everything but ATMOS.
+1. Load a factory set (SAVE → 3 LOAD PRESET), open the mixer (GLO tap) and mute everything but ATMOS.
 2. Bring the layers in from top to bottom, one every 8 or 16 bars.
 3. Change presets on muted layers, then unmute them.
 4. Ride LO/HI CUT, RUMBLE and CRUSH in LIVE mode; mute down to the kick for a breakdown.

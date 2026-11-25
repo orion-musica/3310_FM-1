@@ -114,25 +114,26 @@ static const uint8_t hat_sound[16][5] = {
     {26, 84, 66, 24, 6}};
 /* 5 PERC and 7 SEQ: period, hit mask, four notes (-100 rest), sound bytes. */
 /* Notes: four offsets in nibbles, first in the low nibble; 1 is a rest. */
-struct line { uint16_t mask, notes; uint8_t period, a, b, c, d; };
+/* SEQ cd: reverb | delay << 4. PERC cd: tune 12 x (1 + bits 0-1) | release / 2 << 2. */
+struct line { uint16_t mask, notes; uint8_t period, a, b, cd; };
 static const struct line perc[16] = {
-    {0x1, 0xa370, 3, 34, 96, 24, 20}, {0x5, 0x307c, 5, 50, 110, 24, 30},
-    {0x9, 0x5700, 7, 26, 80, 12, 18}, {0x9, 0x7ca3, 6, 40, 120, 24, 24},
-    {0x3, 0xc710, 3, 30, 70, 36, 20}, {0x1, 0xa037, 5, 60, 100, 24, 40},
-    {0x2492, 0xa730, 16, 36, 90, 24, 24}, {0x25, 0x37ac, 7, 24, 116, 36, 16},
-    {0x49, 0x7c70, 9, 44, 84, 12, 30}, {0x3, 0x0a31, 5, 32, 104, 24, 20},
-    {0x1, 0x7afc, 3, 20, 127, 36, 14}, {0x125, 0x7530, 11, 52, 90, 24, 36},
-    {0x21, 0x0307, 6, 28, 100, 12, 22}, {0x1248, 0x037a, 16, 40, 108, 24, 26},
-    {0x3, 0x70c0, 7, 34, 76, 24, 20}, {0x249, 0xea73, 13, 46, 96, 36, 30}};
+    {0x1, 0xa370, 3, 34, 96, 41}, {0x5, 0x307c, 5, 50, 110, 61},
+    {0x9, 0x5700, 7, 26, 80, 36}, {0x9, 0x7ca3, 6, 40, 120, 49},
+    {0x3, 0xc710, 3, 30, 70, 42}, {0x1, 0xa037, 5, 60, 100, 81},
+    {0x2492, 0xa730, 16, 36, 90, 49}, {0x25, 0x37ac, 7, 24, 116, 34},
+    {0x49, 0x7c70, 9, 44, 84, 60}, {0x3, 0x0a31, 5, 32, 104, 41},
+    {0x1, 0x7afc, 3, 20, 127, 30}, {0x125, 0x7530, 11, 52, 90, 73},
+    {0x21, 0x0307, 6, 28, 100, 44}, {0x1248, 0x037a, 16, 40, 108, 53},
+    {0x3, 0x70c0, 7, 34, 76, 41}, {0x249, 0xea73, 13, 46, 96, 62}};
 static const struct line seq[16] = {
-    {0x0404, 0x0000, 16, 112, 12, 2, 1}, {0x1, 0xa37c, 3, 117, 6, 3, 3},
-    {0x4924, 0x3730, 16, 100, 9, 2, 2}, {0x5, 0xa7c0, 5, 105, 6, 1, 2},
-    {0x0808, 0x0000, 16, 101, 12, 4, 3}, {0x13, 0x3ca7, 7, 118, 6, 2, 2},
-    {0x2222, 0x0300, 16, 113, 8, 1, 1}, {0x5, 0x57ac, 6, 120, 7, 3, 3},
-    {0x0444, 0xa070, 16, 35, 9, 0, 1}, {0x2, 0xc730, 3, 98, 5, 2, 2},
-    {0x9090, 0x7010, 16, 106, 8, 2, 1}, {0x9, 0xea73, 5, 112, 6, 3, 3},
-    {0x0410, 0x0707, 16, 103, 10, 1, 2}, {0x25, 0x37a0, 9, 117, 6, 2, 3},
-    {0xa4a4, 0x0c00, 16, 107, 6, 1, 0}, {0x5, 0x07ca, 7, 100, 7, 3, 2}};
+    {0x0404, 0x0000, 16, 112, 12, 18}, {0x1, 0xa37c, 3, 117, 6, 51},
+    {0x4924, 0x3730, 16, 100, 9, 34}, {0x5, 0xa7c0, 5, 105, 6, 33},
+    {0x0808, 0x0000, 16, 101, 12, 52}, {0x13, 0x3ca7, 7, 118, 6, 34},
+    {0x2222, 0x0300, 16, 113, 8, 17}, {0x5, 0x57ac, 6, 120, 7, 51},
+    {0x0444, 0xa070, 16, 35, 9, 16}, {0x2, 0xc730, 3, 98, 5, 34},
+    {0x9090, 0x7010, 16, 106, 8, 18}, {0x9, 0xea73, 5, 112, 6, 51},
+    {0x0410, 0x0707, 16, 103, 10, 33}, {0x25, 0x37a0, 9, 117, 6, 50},
+    {0xa4a4, 0x0c00, 16, 107, 6, 1}, {0x5, 0x07ca, 7, 100, 7, 35}};
 /* 6 TOPS: ride mask, closed-hat mask, aux mask, ride decay, ride tune, aux. */
 static const uint16_t top_masks[14][3] = {
     {0x4444, 0x0000, 0x0000}, {0x1111, 0x0000, 0x0000}, {0x5555, 0x0000, 0x0000}, {0xffff, 0x0000, 0x0000},
@@ -166,7 +167,7 @@ void hyp_build(unsigned layer, unsigned index, struct groove_preset *p, struct g
         groove_fm_factory(p->data, program);
         if (layer) {
             cycle(s, l->period, l->mask, l->notes, ROOT + 12U, l->b);
-            p->volume = 84; p->data[209] = (uint8_t)(l->c * 3U + 16U * l->d * 3U);
+            p->volume = 84; p->data[209] = (uint8_t)(l->cd * 3U); /* each nibble x3 */
             if (l->period != 16) p->sequence_pages = 0;
         } else {
             static const int8_t move[4][4] = {{0, 0, 0, 0}, {0, 0, 0, -2}, {0, 0, 3, 0}, {0, 5, 0, 3}};
@@ -189,7 +190,7 @@ void hyp_build(unsigned layer, unsigned index, struct groove_preset *p, struct g
     } else if (layer == 4) {
         const struct line *l = &perc[index];
         p->type = GROOVE_PLUCK; p->volume = 92;
-        p->data[0] = l->a; p->data[1] = l->b; p->data[2] = l->c; p->data[3] = l->d;
+        p->data[0] = l->a; p->data[1] = l->b; p->data[2] = (uint8_t)(12U * (1U + (l->cd & 3U))); p->data[3] = (uint8_t)((l->cd >> 2) * 2U);
         cycle(s, l->period, l->mask, l->notes, ROOT + 12U, 3);
         p->data[209] = (uint8_t)(4U + 16U * (index % 3U) * 3U);
         if (l->period != 16) p->sequence_pages = 0;
@@ -244,27 +245,64 @@ void hyp_build(unsigned layer, unsigned index, struct groove_preset *p, struct g
     if (memcmp(s, s + 16, 48 * sizeof *s)) p->sequence_pages = 0;
 }
 
-/* ---- Factory projects: sixteen hypnotic sets ---------------------------- */
+/* ---- Factory projects: sixteen unsettling hypnotic sets ----------------- */
+/* Each set picks one preset per layer (eight nibbles), a tempo, a name from
+ * two words, and shifts that set ATMOS and SEQ against the A minor floor:
+ * +1 is the Phrygian half step, +6 the tritone, -1 a sour leading tone. */
+enum { BLACK, PULSE, STATIC, NERVE, HOLLOW, CELL, DREAD, RUST, ALARM, GHOST, VOID, HUSH };
+static const char words[12][7] = {"BLACK", "PULSE", "STATIC", "NERVE", "HOLLOW", "CELL",
+                                   "DREAD", "RUST", "ALARM", "GHOST", "VOID", "HUSH"};
+struct set { uint8_t pick[4], tempo, name, shift; }; /* tempo: bpm - 126 | swing / 2 << 4 */
+#define PICK(a, k, r, h, p, t, s, c) {(a) | (k) << 4, (r) | (h) << 4, (p) | (t) << 4, (s) | (c) << 4}
+#define SHIFT(a, s) (uint8_t)(((a) & 15) | ((s) & 15) << 4)
+static const struct set sets[GROOVE_FACTORY_PROJECTS] = {
+    {PICK(2, 4, 3, 13, 7, 12, 4, 11), 6, BLACK << 4 | PULSE, SHIFT(1, 0)},
+    {PICK(8, 9, 6, 15, 10, 6, 12, 7), 42, STATIC << 4 | NERVE, SHIFT(0, 6)},
+    {PICK(5, 2, 13, 14, 3, 10, 0, 3), 2, HOLLOW << 4 | CELL, SHIFT(6, 1)},
+    {PICK(10, 15, 11, 5, 11, 3, 7, 9), 56, DREAD << 4 | PULSE, SHIFT(-1, 0)},
+    {PICK(6, 5, 9, 10, 15, 9, 14, 1), 12, RUST << 4 | ALARM, SHIFT(1, 1)},
+    {PICK(13, 7, 3, 3, 2, 13, 3, 6), 32, GHOST << 4 | STATIC, SHIFT(0, -1)},
+    {PICK(11, 12, 6, 13, 13, 12, 4, 11), 4, VOID << 4 | NERVE, SHIFT(6, 6)},
+    {PICK(2, 2, 13, 14, 7, 6, 12, 7), 49, HUSH << 4 | ALARM, SHIFT(1, 6)},
+    {PICK(8, 4, 11, 15, 10, 10, 0, 3), 9, BLACK << 4 | CELL, SHIFT(-1, 1)},
+    {PICK(5, 9, 9, 5, 3, 3, 7, 9), 37, HOLLOW << 4 | DREAD, SHIFT(6, 0)},
+    {PICK(10, 15, 3, 10, 11, 9, 14, 1), 11, RUST << 4 | GHOST, SHIFT(0, 1)},
+    {PICK(6, 7, 6, 3, 15, 13, 3, 6), 55, CELL << 4 | ALARM, SHIFT(1, -2)},
+    {PICK(13, 12, 13, 13, 2, 12, 4, 11), 3, STATIC << 4 | HUSH, SHIFT(-1, 6)},
+    {PICK(11, 5, 11, 14, 13, 6, 12, 7), 40, GHOST << 4 | PULSE, SHIFT(6, 1)},
+    {PICK(2, 4, 9, 15, 7, 10, 0, 3), 14, DREAD << 4 | VOID, SHIFT(1, 1)},
+    {PICK(8, 9, 3, 5, 10, 3, 7, 9), 50, HOLLOW << 4 | RUST, SHIFT(-1, -1)}};
 const char *groove_factory_name(unsigned index)
 {
     static char name[13];
     if (index >= GROOVE_FACTORY_PROJECTS) return NULL;
-    memcpy(name, "HYPNOTIC 01", 12);
-    name[9] = (char)('0' + (index + 1U) / 10U); name[10] = (char)('0' + (index + 1U) % 10U);
+    unsigned at = 0, w = sets[index].name;
+    memset(name, ' ', 12);
+    for (unsigned k = 0; k < 2; ++k, ++at)
+        for (const char *c = words[k ? w & 15U : w >> 4]; *c; ++c) name[at++] = *c;
+    name[12] = 0;
     return name;
 }
 int groove_factory_build(unsigned index, struct groove_project *p)
 {
     if (!p || index >= GROOVE_FACTORY_PROJECTS) return GROOVE_PROJECT_INVALID;
+    const struct set *set = &sets[index];
     memset(p, 0, sizeof *p);
     memcpy(p->name, groove_factory_name(index), 12);
-    p->tempo = (uint16_t)(126U + (index * 5U) % 15U);
-    p->effects[0] = 84; p->effects[1] = GROOVE_DELAY_SYNC + 7U; /* 1/8 dotted */
-    p->effects[2] = 46; p->effects[3] = 84;
+    p->tempo = (uint16_t)(126U + (set->tempo & 15U));
+    p->effects[0] = 92; p->effects[1] = GROOVE_DELAY_SYNC + 7U; /* 1/8 dotted */
+    p->effects[2] = 52; p->effects[3] = 84;
     groove_sequence_defaults(&p->sequence);
-    p->sequence.swing = (uint8_t)(index & 3U ? 0 : 6);
+    p->sequence.swing = (uint8_t)((set->tempo >> 4) * 2U);
     groove_project_arp_defaults(p);
-    for (unsigned t = 0; t < GROOVE_TRACKS; ++t)
-        hyp_build(t, index * (t + 3U) + t, &p->preset[t], p->step[t]);
+    for (unsigned t = 0; t < GROOVE_TRACKS; ++t) {
+        hyp_build(t, (set->pick[t >> 1] >> (4U * (t & 1U))) & 15U, &p->preset[t], p->step[t]);
+        if (t != 0 && t != 6) continue;
+        /* Signed nibble: ATMOS low, SEQ high. */
+        int shift = (int)((set->shift >> (t ? 4U : 0U)) & 15U);
+        if (shift > 7) shift -= 16;
+        for (unsigned i = 0; i < 64; ++i)
+            if (p->step[t][i].velocity) p->step[t][i].note = (uint8_t)(p->step[t][i].note + shift);
+    }
     return groove_project_valid(p) ? 0 : GROOVE_PROJECT_INVALID;
 }

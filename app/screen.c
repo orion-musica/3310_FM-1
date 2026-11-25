@@ -124,7 +124,7 @@ static void text(unsigned x, unsigned y, const char *s, unsigned scale, uint16_t
 }
 /* Eight tracks stay visible on HOME. SEQ maps the sixteen white keys to one
  * quarter of the 64-step pattern. All drawing and edits run on app_control. */
-enum { OVERVIEW, STEPS, FM_EDIT, FM_ENV, FM_LFO, TONE_EDIT, MIX, BLE, PROJECT, NAME, EFFECTS, SOURCE, ACTIONS, STEP_EDIT, RHYTHM, FM_QUICK, PRESET_BROWSER, ARP_EDIT, STARTUP, HLV };
+enum { OVERVIEW, STEPS, FM_EDIT, FM_ENV, FM_LFO, TONE_EDIT, MIX, BLE, PROJECT, NAME, EFFECTS, SOURCE, ACTIONS, STEP_EDIT, RHYTHM, FM_QUICK, PRESET_BROWSER, ARP_EDIT, STARTUP, HLV, FILES };
 enum { OCT_DOWN, OCT_UP, FX, SCL, ENV, LFO, EDIT, GLO, HOME, SAVE, ARP, SEQ, PLAY, REC };
 #define BUTTON(b) (1U << (b))
 /* 3310 ARRANGE page (hlv.inc). */
@@ -273,7 +273,7 @@ static void move_step(const struct groove_view *view, int delta, int pages)
 }
 static unsigned navigation_mode(void)
 {
-    return 0 || page == PROJECT || page == PRESET_BROWSER || page == MIX || page == NAME ||
+    return page == FILES || page == PROJECT || page == PRESET_BROWSER || page == MIX || page == NAME ||
         (page >= SOURCE && page <= RHYTHM) || (page == STEPS && !writing) || glo_down;
 }
 static unsigned encoder_active(const int16_t values[7])
@@ -947,7 +947,6 @@ static __attribute__((noinline)) void preset_draw(void)
     text(8, 127, "SELECT / PRE LOAD", 1, TEXT, BACK);
     text(8, 148, "PLAY LOAD  SAVE", 1, TEXT, BACK);
     text(8, 170, "KEYS 1-16 LOAD", 1, DIM, BACK);
-    text(8, 191, "K1 BANK", 1, DIM, BACK);
     text(8, 213, project_result == GROOVE_PROJECT_EMPTY ? "EMPTY SLOT" :
          project_result ? "LOAD FAILED" : "HOME BACK", 1,
          project_result ? AMBER : DIM, BACK);
@@ -1022,6 +1021,7 @@ static __attribute__((noinline)) void effects_draw(void)
     }
 }
 static int hlv_leds(const struct groove_view *v); /* hlv.inc: the LED show */
+static void hlv_menu_draw(void); /* hlv.inc: the SAVE menu */
 static void leds(const struct groove_view *v, unsigned visible)
 {
     if (visible == HLV && v->playing && !writing && hlv_leds(frame_views)) return;
@@ -1077,7 +1077,7 @@ static void leds(const struct groove_view *v, unsigned visible)
         | ((v->playing != 0) << PLAY) | ((visible == MIX) << GLO)
         | ((visible == FM_EDIT || visible == TONE_EDIT || visible == FM_QUICK || visible == STEP_EDIT) << EDIT)
         | ((visible == FM_ENV) << ENV) | ((visible == FM_LFO) << LFO)
-        | ((visible == PROJECT || visible == SOURCE || (visible == ACTIONS && action_confirm)) << SAVE);
+        | ((visible == PROJECT || visible == FILES || visible == SOURCE || (visible == ACTIONS && action_confirm)) << SAVE);
     changed = bits ^ button_led_cache;
     for (unsigned key = 0; key < 14; ++key)
         if (changed & (1U << key)) fm1_led_set(key, (bits >> key) & 1U);
@@ -1237,7 +1237,7 @@ static void draw_page_body(const struct fm1_ble_status *ble)
         memset(cache->meter_cache, 0xff, sizeof cache->meter_cache);
         memset(cache->hlv, 0xff, sizeof cache->hlv);
         if (visible == PROJECT || visible == PRESET_BROWSER)
-            text(8, 8, visible == PROJECT ? "SAVE PROJECT" : "PRESETS", 2, ACCENT, BACK);
+            text(8, 8, visible == PROJECT ? "SAVE PROJECT" : preset_bank ? "LOAD PRESET" : "LOAD PROJECT", 2, ACCENT, BACK);
     }
     if (visible == STARTUP) { boot_draw(); return; }
     const struct groove_view *views = frame_views, *v = &views[track];
@@ -1248,6 +1248,10 @@ static void draw_page_body(const struct fm1_ble_status *ble)
     }
     if (visible == PRESET_BROWSER) {
         preset_draw();
+        return;
+    }
+    if (visible == FILES) {
+        hlv_menu_draw();
         return;
     }
     if (visible == PROJECT) {
@@ -1862,9 +1866,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
         if (pressed & BUTTON(HOME)) {
             if (page == ACTIONS && action_confirm) action_confirm = 0;
             else if (0 && ble_forget == 1) ble_forget = 0;
-            else if (page == HLV) {
-                preset_refresh(); project_result = 0; page = PRESET_BROWSER;
-            } else page = HLV; /* 3310: ARRANGE replaces the old overview */
+            else page = HLV; /* 3310: ARRANGE replaces the old overview; HOME+K1 is the mode slider */
         } else if (pressed & BUTTON(SEQ)) {
             /* SEQ alternates ARRANGE (3310) and the step editor. */
             if (page == HLV) { page = STEPS; seq_page = 0; step_follow = 1; cache->shown_page = ~0U; }
@@ -1920,12 +1922,15 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
     }
     if (page != STEPS && page != ACTIONS)
         octave = clamp(octave + !!(pressed & BUTTON(OCT_UP)) - !!(pressed & BUTTON(OCT_DOWN)), -2, 2);
-    if ((pressed & BUTTON(SAVE)) && page != PROJECT && 1 &&
+    /* 3310: SAVE opens the project menu (save, load project, load preset, new). */
+    if ((pressed & BUTTON(SAVE)) && page != PROJECT && page != FILES &&
         page != SOURCE && page != ACTIONS) {
-        project_return = page; page = PROJECT; project_result = 0;
-        project_reload = project_operation = 0;
-        project_slot = groove_project_slot(); project_factory = name_cursor = 0;
-        glo_down = 0; project_refresh();
+        hlv_menu_item = hlv_menu_confirm = 0; page = FILES;
+        glo_down = 0;
+        goto controls_done;
+    }
+    if (page == FILES) {
+        hlv_menu_controls(pressed, key_down, now, controls->encoders[0] + controls->encoders[2] + controls->encoders[6]);
         goto controls_done;
     }
     if (pressed & BUTTON(GLO)) {
@@ -1961,7 +1966,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
     if (page == PRESET_BROWSER) {
         play_handled = 1;
         int delta = controls->encoders[0] + controls->encoders[6];
-        unsigned bank = (unsigned)clamp((int)preset_bank + controls->encoders[2], 0, 1);
+        unsigned bank = preset_bank; /* fixed: chosen in the SAVE menu */
         unsigned slot = (unsigned)clamp((int)preset_slot + delta, 0, GROOVE_PROJECT_SLOTS - 1);
         unsigned load = 0, start = 0;
         for (unsigned i = 0; i < 16; ++i)

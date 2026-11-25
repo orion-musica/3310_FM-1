@@ -443,8 +443,8 @@ static int hlv_edit_gesture(const struct fm1_controls *c, uint32_t pressed, uint
     }
     return 1;
 }
-/* HOME on ARRANGE acts on release: a tap opens the projects, HOME held while
- * K1 turns changes the mode. Other HOME combinations keep their meaning.
+/* HOME held on ARRANGE shows the mode slider and K1 moves it. Projects and
+ * presets are in the SAVE menu. Other HOME combinations keep their meaning.
  * Runs before the panel shortcuts; returns 1 when the event was consumed. */
 static int hlv_home_gesture(const struct fm1_controls *c, uint32_t pressed, uint32_t now)
 {
@@ -455,12 +455,7 @@ static int hlv_home_gesture(const struct fm1_controls *c, uint32_t pressed, uint
         hlv_home_used = 0;
         return 1;
     }
-    if (!(c->buttons & BUTTON(HOME))) {
-        hlv_home_down = 0;
-        if (hlv_home_used) return 1;
-        preset_refresh(); project_result = 0; page = PRESET_BROWSER;
-        return 1;
-    }
+    if (!(c->buttons & BUTTON(HOME))) { hlv_home_down = 0; return 1; }
     if (c->encoders[2]) {
         hlv_home_used = 1;
         unsigned mode = (unsigned)clamp((int)hlv_mode + c->encoders[2], 0, HLV_MODES - 1);
@@ -523,6 +518,76 @@ static void hlv_poll(uint32_t now)
         }
         hlv_last_step[t] = v.play_step;
     }
+}
+
+/* ---- SAVE menu ---------------------------------------------------------- */
+/* 1 SAVE PROJECT, 2 LOAD PROJECT (user slots), 3 LOAD PRESET (the sixteen
+ * HYPNOTIC sets), 4 NEW PROJECT (YES / NO first). SELECT, K1 or PRESETS move,
+ * keys 1-4 pick, SAVE opens, HOME goes back. */
+static unsigned hlv_menu_item, hlv_menu_confirm;
+static void hlv_menu_controls(uint32_t pressed, uint32_t key_down, uint32_t now, int move)
+{
+    blocked_keys |= key_down; /* a menu key must not also play a note */
+    unsigned ok = (pressed & BUTTON(SAVE)) != 0, no = 0;
+    for (unsigned i = 0; i < 4; ++i)
+        if (key_down & (1U << white_keys[i])) {
+            if (hlv_menu_confirm) { ok = i == 0; no = i != 0; }
+            else { hlv_menu_item = i; ok = 1; }
+        }
+    if (hlv_menu_confirm) {
+        if (no || move) { hlv_menu_confirm = 0; return; }
+        if (!ok || !release_keys()) return;
+        hlv_menu_confirm = 0;
+        int r = groove_project_new();
+        notice = r ? "NEW PROJECT FAILED" : "NEW PROJECT"; notice_until = now + 2000U;
+        if (!r) { preset_loaded = 0; memset(hlv_preset, 0xff, sizeof hlv_preset); memset(hlv_based, 0, sizeof hlv_based); }
+        page = music_page = HLV;
+        return;
+    }
+    if (move) hlv_menu_item = (unsigned)clamp((int)hlv_menu_item + move, 0, 3);
+    if (!ok) return;
+    if (!hlv_menu_item) {
+        project_return = HLV; page = PROJECT; project_result = 0;
+        project_reload = project_operation = 0;
+        project_slot = groove_project_slot(); project_factory = name_cursor = 0;
+        project_refresh();
+    } else if (hlv_menu_item < 3) {
+        preset_bank = hlv_menu_item - 1U;
+        preset_slot = preset_bank ? (preset_current_bank ? preset_current_slot : 0) : groove_project_slot();
+        project_result = 0; preset_refresh(); page = PRESET_BROWSER;
+    } else hlv_menu_confirm = 1;
+}
+static void hlv_menu_draw(void)
+{
+    char name[13];
+    groove_project_name(name);
+    uint32_t sig = signature(hlv_menu_item | (hlv_menu_confirm << 2), name, 12);
+    if (cache->hlv[0] == sig) return;
+    cache->hlv[0] = sig;
+    paint_fill(0, 0, 240, 240, BACK);
+    text(6, 8, "PROJECT", 2, TEXT, BACK);
+    text(6, 32, name, 1, DIM, BACK);
+    paint_fill(0, 44, 240, 2, TEXT);
+    if (hlv_menu_confirm) {
+        paint_fill(10, 60, 220, 70, TEXT);
+        text(22, 72, "SAVED SLOTS STAY", 1, BACK, TEXT);
+        text(22, 92, "NEW PROJECT?", 2, BACK, TEXT);
+        frame(10, 144, 104, 40, TEXT); frame(126, 144, 104, 40, TEXT);
+        paint_fill(13, 147, 98, 34, TEXT);
+        text(44, 156, "YES", 2, BACK, TEXT);
+        text(164, 156, "NO", 2, TEXT, BACK);
+        text(6, 224, "KEY1/SAVE YES  KEY2/HOME NO", 1, DIM, BACK);
+        return;
+    }
+    static const char *const items[4] = {"SAVE PROJECT", "LOAD PROJECT", "LOAD PRESET", "NEW PROJECT"};
+    for (unsigned i = 0; i < 4; ++i) {
+        unsigned y = 54 + i * 38, on = i == hlv_menu_item;
+        paint_fill(6, y, 228, 32, on ? TEXT : PANEL);
+        number(14, y + 9, (int)i + 1, 1, 2, on ? BACK : DIM, on ? TEXT : PANEL);
+        text(40, y + 9, items[i], 2, on ? BACK : TEXT, on ? TEXT : PANEL);
+    }
+    text(6, 210, "SELECT / KEYS 1-4", 1, DIM, BACK);
+    text(6, 224, "SAVE = OPEN  HOME = BACK", 1, DIM, BACK);
 }
 
 /* ---- LED show: SNAKE on the keyboard ------------------------------------ */
@@ -638,7 +703,7 @@ static void hlv_draw_box(uint16_t mc)
     static const char *const subs[] = {"", "", "", "HOME+K1 > USER", ""};
     unsigned kind = hlv_home_down ? HLV_NOTE_MODE : hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
     const char *top = tops[kind], *mid = mids[kind], *sub = subs[kind];
-    char line[28];
+    char line[40]; /* four names and spaces, up to 30 characters */
     if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K1-K4"; sub = "LET GO SAVE  +PLAY UNDO"; }
     else if (kind == HLV_NOTE_MODE) {
         mid = hlv_mode_names[hlv_mode];

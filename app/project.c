@@ -6,6 +6,7 @@
 #include "instrument.h"
 #include "tuning_hook.h"
 #include "fm_patch.h"
+#include "hypno.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -664,6 +665,17 @@ int groove_project_export(uint8_t *bytes, unsigned capacity)
         memcpy(bytes + sizeof record.project, &block, sizeof block);
     }
     return 0;
+}
+/* 3310 NEW PROJECT: the first factory set's eight layer sounds, no notes. */
+int groove_project_new(void)
+{
+    int r = groove_factory_build(0, &record.project);
+    if (r) return r;
+    memset(record.project.step, 0, sizeof record.project.step);
+    memcpy(record.project.name, "NEW PROJECT ", 12);
+    r = apply_edit(&record.project, 0x84000U);
+    if (!r) { tuning_zero(); groove_project_touch(); }
+    return r;
 }
 int groove_factory_load(unsigned index)
 {

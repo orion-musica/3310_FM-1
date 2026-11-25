@@ -7,5 +7,7 @@
 enum { HYP_LAYERS = 8 };
 unsigned hyp_count(unsigned layer);
 const char *hyp_name(unsigned layer);
+/* Replace the working project with the layer sounds and no notes (undoable). */
+int groove_project_new(void);
 void hyp_build(unsigned layer, unsigned index, struct groove_preset *p, struct groove_step steps[64]);
 #endif

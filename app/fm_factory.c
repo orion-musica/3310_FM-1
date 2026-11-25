@@ -14,9 +14,11 @@ static FM1_DSP_CODE void factory_init(void)
         unsigned token=factory_packed[at++];
         if (token<128) *out++=(uint8_t)token;
         else {
+            /* 128..191: base-128 distance; 192..255: k+1 whole voices back. */
             unsigned low=factory_packed[at++],distance=low&127U;
-            if (low&128U) distance|=(unsigned)factory_packed[at++]<<7;
-            for (unsigned n=token-128+3;n;--n) { *out=out[-(int)distance]; ++out; }
+            if (token>=192U) distance=(low+1U)<<7;
+            else if (low&128U) distance|=(unsigned)factory_packed[at++]<<7;
+            for (unsigned n=(token&63U)+3U;n;--n) { *out=out[-(int)distance]; ++out; }
         }
     }
     factory_ready=1;

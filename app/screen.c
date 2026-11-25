@@ -1021,8 +1021,10 @@ static __attribute__((noinline)) void effects_draw(void)
         knob(i, label, display, colors[i]);
     }
 }
+static int hlv_leds(const struct groove_view *v); /* hlv.inc: the LED show */
 static void leds(const struct groove_view *v, unsigned visible)
 {
+    if (visible == HLV && v->playing && !writing && hlv_leds(frame_views)) return;
     uint32_t bits = 0;
     unsigned first = step_first(v), blink = (frame_time / 250U) & 1U;
     if (visible == STEPS && !writing) {
@@ -1772,6 +1774,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
         if (!post(0xff, 0, 0, 1)) return 0;
         memset(key_note, 0xff, sizeof key_note); project_keys = 0;
         page = music_page = HLV;
+        hlv_home_used = 1; /* the HOME release must not open the projects */
         writing = glo_down = glo_used = project_reload = edit_down = edit_long = 0;
         arp_down = arp_long = seq_down = rec_down = 0;
         groove_edit_record(0, track, cursor);
@@ -1781,6 +1784,8 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
      * its editor is open. Leave editors that cannot apply to the new source. */
     if (page == NAME && groove_source_type(track) != GROOVE_DX7)
         page = HLV;
+    /* 3310: HOME+K1 changes the ARRANGE mode; a HOME tap opens the projects. */
+    if (hlv_home_gesture(controls, pressed, now)) goto controls_done;
     /* 3310: EDIT hold remaps USER knobs, EDIT+PLAY cancels. */
     if (hlv_edit_gesture(controls, pressed, now, &play_handled)) {
         /* EDIT + PRESETS on ARRANGE: change the track's engine (was on the old overview). */

@@ -570,15 +570,13 @@ static void hlv_menu_draw(void)
     paint_fill(0, 44, 240, 2, TEXT);
     if (hlv_menu_confirm) {
         paint_fill(10, 60, 220, 70, TEXT);
-        text(22, 72, "START A NEW PROJECT?", 1, BACK, TEXT);
-        text(22, 86, "NO NOTES", 2, BACK, TEXT);
-        text(22, 110, "SAVED SLOTS STAY", 1, BACK, TEXT);
+        text(22, 72, "SAVED SLOTS STAY", 1, BACK, TEXT);
+        text(22, 92, "NEW PROJECT?", 2, BACK, TEXT);
         frame(10, 144, 104, 40, TEXT); frame(126, 144, 104, 40, TEXT);
         paint_fill(13, 147, 98, 34, TEXT);
         text(44, 156, "YES", 2, BACK, TEXT);
         text(164, 156, "NO", 2, TEXT, BACK);
-        text(6, 210, "KEY 1 / SAVE = YES", 1, DIM, BACK);
-        text(6, 224, "KEY 2 / HOME = NO", 1, DIM, BACK);
+        text(6, 224, "KEY1/SAVE YES  KEY2/HOME NO", 1, DIM, BACK);
         return;
     }
     static const char *const items[4] = {"SAVE PROJECT", "LOAD PROJECT", "LOAD PRESET", "NEW PROJECT"};

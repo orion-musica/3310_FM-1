@@ -620,7 +620,7 @@ static void hlv_icon(unsigned x, unsigned y, unsigned t, uint16_t fg, uint16_t b
         }
     }
 }
-static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
+static void hlv_draw_box(uint16_t mc)
 {
     /* x 30..209 / 8..231, y 48..175: whole 16-row bands. */
     if (paint_rendering && (paint_top >= 176 || paint_top + PAINT_ROWS <= 48)) return;
@@ -745,7 +745,7 @@ static void hlv_draw(const struct groove_view v[8])
             }
         }
     }
-    hlv_draw_box(sel, mc);
+    hlv_draw_box(mc);
     /* The four parameters of this mode (the mode itself is in the header). */
     const uint8_t *map = hlv_map();
     for (unsigned i = 0; i < 4; ++i) {

@@ -41,12 +41,12 @@ static void kit(struct groove_preset *p)
     /* Each layer plays one or two parts: quiet the rest of the kit. */
     for (unsigned part = 0; part < D8_NUM; ++part) kv(p, part, 0, 0);
 }
-/* Rev/Dly sends sit two and one places before Pan, the last parameter. */
-static void ksend(struct groove_preset *p, unsigned part, unsigned rev, unsigned dly)
+/* Kit settings as (part, parameter, value) triples ending in 0xff; a value
+ * of 200 + n takes byte n of the preset's own sound row. */
+enum { V0 = 200, V1, V2, V3, V4, V5 };
+static void kset(struct groove_preset *p, const uint8_t *list, const uint8_t *row)
 {
-    static const uint8_t last[11] = {7, 9, 8, 8, 8, 8, 9, 7, 7, 7, 7};
-    kv(p, part, last[part] - 2U, rev);
-    kv(p, part, last[part] - 1U, dly);
+    for (; *list != 0xffU; list += 3) kv(p, list[0], list[1], list[2] >= V0 ? row[list[2] - V0] : list[2]);
 }
 static void lane(struct groove_step *s, unsigned part, uint16_t mask, unsigned accent)
 {
@@ -199,41 +199,40 @@ void hyp_build(unsigned layer, unsigned index, struct groove_preset *p, struct g
         if (layer == 1) {
             const uint8_t *k = kicks[index];
             static const uint16_t extra[4] = {0, 0x8000, 0x4000, 0x0400};
-            kv(p, BD, 0, 120);
-            for (unsigned i = 0; i < 6; ++i) kv(p, BD, i + 1U, k[i]);
+            static const uint8_t set[] = {BD, 0, 120, BD, 1, V0, BD, 2, V1, BD, 3, V2, BD, 4, V3, BD, 5, V4, BD, 6, V5, 0xff};
+            kset(p, set, k);
             lane(s, BD, 0x1111, 0);
             for (unsigned i = 0; i < 64; i += 4) s[i].velocity = 120;
             for (unsigned i = 0; i < 64; ++i)
                 if ((extra[k[6]] >> (i & 15U)) & 1U && (i & 32U)) { s[i].drums = 1; s[i].velocity = 70; }
         } else if (layer == 3) {
             const uint8_t *h = hat_sound[index];
-            kv(p, CH, 0, 96); kv(p, OH, 0, 88);
-            kv(p, CH, 2, h[0]); kv(p, OH, 1, h[1]); kv(p, CH, 1, h[2]); kv(p, OH, 2, h[2]);
-            kv(p, CH, 3, h[3]); kv(p, CH, 4, h[4]); kv(p, OH, 3, h[3]); kv(p, OH, 4, h[4]);
-            ksend(p, OH, 20, 0);
+            static const uint8_t set[] = {CH, 0, 96, OH, 0, 88, CH, 2, V0, OH, 1, V1, CH, 1, V2, OH, 2, V2,
+                CH, 3, V3, CH, 4, V4, OH, 3, V3, OH, 4, V4, OH, 5, 20, 0xff};
+            kset(p, set, h);
             lane(s, CH, hat_masks[index][0], 0);
             lane(s, OH, hat_masks[index][1], 8);
             if (index == 14) poly(s, CH, 3, 1);
         } else if (layer == 5) {
             const uint8_t *t = top_sound[index];
-            kv(p, CY, 0, 84); kv(p, CY, 1, t[0]); kv(p, CY, 2, t[1]); ksend(p, CY, 30, 10);
-            kv(p, CH, 0, 60); kv(p, CH, 2, 34);
+            static const uint8_t set[] = {CY, 0, 84, CY, 1, V0, CY, 2, V1, CY, 5, 30, CY, 6, 10, CH, 0, 60, CH, 2, 34, CB, 0, 58, 0xff};
+            kset(p, set, t);
             /* Aux: maracas (clap variant), cowbell or conga. */
             static const uint8_t aux[4] = {CP, CP, CB, LT};
             unsigned x = aux[t[2]];
             if (x == CP) p->data[CP] = 1; /* MARAC */
             if (x == LT) p->data[LT] = 1; /* CONGA */
-            kv(p, x, 0, t[2] == 2 ? 58 : 72);
+            if (x != CB) kv(p, x, 0, 72);
             lane(s, CY, top_masks[index][0], 0);
             lane(s, CH, top_masks[index][1], 0);
             lane(s, x, top_masks[index][2], 0);
-            if (index == 12) { poly(s, CB, 3, 2); poly(s, LT, 5, 0); kv(p, CB, 0, 56); }
-            if (index == 6 || index == 10) { poly(s, CB, 7, 3); kv(p, CB, 0, 58); }
+            if (index == 12) { poly(s, CB, 3, 2); poly(s, LT, 5, 0); }
+            if (index == 6 || index == 10) poly(s, CB, 7, 3);
         } else {
             const uint8_t *c = clap_sound[index];
-            kv(p, CP, 0, 92); kv(p, SD, 0, 80); kv(p, RS, 0, 70);
-            kv(p, CP, 2, c[0]); kv(p, CP, 1, c[1]); kv(p, SD, 1, c[1]);
-            ksend(p, CP, c[2], c[3]); ksend(p, SD, c[2], c[3]); ksend(p, RS, 30, 20);
+            static const uint8_t set[] = {CP, 0, 92, SD, 0, 80, RS, 0, 70, CP, 2, V0, CP, 1, V1, SD, 1, V1,
+                CP, 7, V2, CP, 8, V3, SD, 7, V2, SD, 8, V3, RS, 6, 30, RS, 7, 20, 0xff};
+            kset(p, set, c);
             lane(s, CP, clap_masks[index][0], 0);
             lane(s, SD, clap_masks[index][1], 0);
             lane(s, RS, clap_masks[index][2], 0);

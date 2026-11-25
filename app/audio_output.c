@@ -4,9 +4,9 @@
 #include "fm1_audio_io.h"
 
 static unsigned output_gain;
-/* 3310 live master FX, set by the ARRANGE page: 0 RUMBLE, 1 CRUSH,
- * 2 LO CUT, 3 HI CUT; 0 is off, 1..15 is the amount. */
-volatile uint8_t fm1_fx[4];
+/* 3310 live master FX, set by the ARRANGE page (see audio_output.h). */
+volatile uint8_t fm1_fx[2];
+volatile uint16_t fm1_cut[2];
 static int32_t usb_pcm[FM1_BLOCK_WORDS] __attribute__((aligned(32)));
 static int16_t bluetooth_pcm[FM1_BLOCK_WORDS] __attribute__((aligned(32)));
 
@@ -19,11 +19,6 @@ static inline __attribute__((always_inline)) int32_t limit(int64_t value)
         return value < 0 ? -8388608 : 8388607;
     return (int32_t)value;
 }
-/* One-pole coefficients (Q12): HI CUT 16 kHz..200 Hz, LO CUT 25 Hz..1.6 kHz. */
-static FM1_AUDIO_DATA const uint16_t hicut_a[16] = {0, 3677, 3323, 2886, 2416, 1962, 1553, 1205,
-    921, 696, 522, 389, 288, 213, 157, 115};
-static FM1_AUDIO_DATA const uint16_t locut_a[16] = {0, 15, 20, 26, 35, 48, 64, 86,
-    115, 154, 206, 275, 366, 484, 638, 835};
 static int32_t hi_state[2][2], lo_state[2][2], crush_held[2];
 static unsigned crush_count;
 /* RUMBLE: the low band (mostly the kick) smeared by two combs at 11 kHz,
@@ -48,11 +43,11 @@ static inline __attribute__((always_inline)) int32_t sat24(int32_t v)
 }
 FM1_AUDIO_CODE static void live_fx(int32_t *output)
 {
-    unsigned rumble = fm1_fx[0] & 15U, crush = fm1_fx[1] & 15U;
-    int32_t lo = locut_a[fm1_fx[2] & 15U], hi = hicut_a[fm1_fx[3] & 15U];
+    unsigned rumble = fm1_fx[0], crush = fm1_fx[1] & 15U;
+    int32_t lo = fm1_cut[0], hi = fm1_cut[1];
     /* No division in the audio ISR: hold ~ 1 + crush^2/40, shift ~ 9 + crush*2/3. */
     unsigned hold = 1U + ((crush * crush * 13U) >> 9), shift = 9U + ((crush * 43U) >> 6);
-    int32_t feedback = 23500 + (int32_t)rumble * 550, mask = ~(int32_t)((1U << shift) - 1U); /* Q15 */
+    int32_t feedback = 23500 + (int32_t)rumble * 82, mask = ~(int32_t)((1U << shift) - 1U); /* Q15 */
     for (unsigned i = 0; i < FM1_BLOCK_WORDS; i += 2) {
         int32_t wet = 0;
         if (rumble) {
@@ -73,7 +68,7 @@ FM1_AUDIO_CODE static void live_fx(int32_t *output)
             if (wet > 3145728) wet = 3145728 + ((wet - 3145728) >> 2); /* soft knee */
             else if (wet < -3145728) wet = -3145728 + ((wet + 3145728) >> 2);
             int32_t gain = 4096 - (duck >= 2097152 ? 3600 : ((duck >> 9) * 3600) >> 12); /* Q12 */
-            wet = (((wet >> 8) * gain) >> 4) * (int32_t)rumble >> 4;
+            wet = ((((wet >> 8) * gain) >> 5) * (int32_t)rumble * 5) >> 8; /* about rumble/100, no division */
         }
         if (crush && ++crush_count >= hold) crush_count = 0;
         for (unsigned c = 0; c < 2; ++c) {
@@ -92,7 +87,7 @@ FM1_AUDIO_CODE static void live_fx(int32_t *output)
 FM1_AUDIO_CODE void fm1_output_mix(int32_t *output)
 {
     if (!output) return;
-    if (fm1_fx[0] | fm1_fx[1] | fm1_fx[2] | fm1_fx[3]) live_fx(output);
+    if (fm1_fx[0] | fm1_fx[1] | fm1_cut[0] | fm1_cut[1]) live_fx(output);
     unsigned target = fm1_engine_output_level();
     if (target > 127U) target = 127U;
     int delta = (int)target - (int)output_gain;

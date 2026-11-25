@@ -18,13 +18,13 @@
 #include "hypno.h"
 #include "audio_output.h"
 
-enum { HLV_RHYTHM, HLV_GROOVE, HLV_SPACE, HLV_USER, HLV_MODES };
+enum { HLV_LIVE, HLV_RHYTHM, HLV_GROOVE, HLV_SPACE, HLV_USER, HLV_MODES };
 enum {
     HLV_P_HITS, HLV_P_ROTATE, HLV_P_MUTATE,
     HLV_P_GATE, HLV_P_SWING, HLV_P_CHANCE,
     HLV_P_CUTOFF, HLV_P_PUNCH,
     HLV_P_THROW, HLV_P_REVERB, HLV_P_VOLUME,
-    HLV_P_RUMBLE, HLV_P_CRUSH, HLV_P_LOCUT, HLV_P_HICUT, /* master FX, fm1_fx[0..3] */
+    HLV_P_RUMBLE, HLV_P_CRUSH, HLV_P_FILTER, HLV_P_BPM, /* live: master FX and tempo */
     HLV_PARAMS
 };
 enum { HLV_NOTE_MODE, HLV_NOTE_SAVED, HLV_NOTE_CANCEL, HLV_NOTE_USER_ONLY, HLV_NOTE_PRESET };
@@ -36,17 +36,26 @@ enum { HLV_NOTE_MODE, HLV_NOTE_SAVED, HLV_NOTE_CANCEL, HLV_NOTE_USER_ONLY, HLV_N
 
 static const char *const hlv_param_names[HLV_PARAMS] = {
     "HITS", "ROTATE", "MUTATE", "GATE", "SWING", "CHANCE",
-    "CUTOFF", "PUNCH", "THROW", "REVERB", "VOLUME", "RUMBLE", "CRUSH", "LO CUT", "HI CUT"};
-static const char *const hlv_mode_names[HLV_MODES] = {"RHYTHM", "GROOVE", "SPACE", "USER"};
+    "CUTOFF", "PUNCH", "THROW", "REVERB", "VOLUME", "RUMBLE", "CRUSH", "LO/HI CUT", "BPM"};
+static const char *const hlv_mode_names[HLV_MODES] = {"LIVE", "RHYTHM", "GROOVE", "SPACE", "USER"};
 /* Red, amber, cyan and the USER mode's young-grass green (RGB565). */
 /* 3310: every mode uses the LCD ink; the mode chip names the mode. */
-static const uint16_t hlv_mode_colors[HLV_MODES] = {HLV_RED, HLV_RED, HLV_RED, HLV_RED};
-/* K1 of every mode is one of the four live master effects. */
-static const uint8_t hlv_factory_map[4][4] = {
-    {HLV_P_RUMBLE, HLV_P_HITS, HLV_P_ROTATE, HLV_P_MUTATE},
-    {HLV_P_CRUSH, HLV_P_GATE, HLV_P_SWING, HLV_P_CHANCE},
-    {HLV_P_HICUT, HLV_P_CUTOFF, HLV_P_PUNCH, HLV_P_THROW},
-    {HLV_P_LOCUT, HLV_P_HITS, HLV_P_REVERB, HLV_P_VOLUME}};
+static const uint16_t hlv_mode_colors[HLV_MODES] = {HLV_RED, HLV_RED, HLV_RED, HLV_RED, HLV_RED};
+/* LIVE: master effects and tempo. The other modes keep the LO/HI CUT
+ * filter on K1; the last row is the starting USER map. */
+static const uint8_t hlv_factory_map[HLV_MODES][4] = {
+    {HLV_P_RUMBLE, HLV_P_CRUSH, HLV_P_FILTER, HLV_P_BPM},
+    {HLV_P_FILTER, HLV_P_HITS, HLV_P_ROTATE, HLV_P_MUTATE},
+    {HLV_P_FILTER, HLV_P_GATE, HLV_P_SWING, HLV_P_CHANCE},
+    {HLV_P_FILTER, HLV_P_CUTOFF, HLV_P_PUNCH, HLV_P_THROW},
+    {HLV_P_RUMBLE, HLV_P_HITS, HLV_P_REVERB, HLV_P_VOLUME}};
+/* LO/HI CUT one-pole coefficients (Q12) at 15 points: left of zero a low
+ * cut from 25 Hz to 1.6 kHz, right of zero a high cut from 16 kHz to 200 Hz. */
+static const uint16_t hlv_cut_table[2][15] = {
+    {15, 20, 26, 35, 48, 64, 86, 115, 154, 206, 275, 366, 484, 638, 835},
+    {3677, 3323, 2886, 2416, 1962, 1553, 1205, 921, 696, 522, 389, 288, 213, 157, 115}};
+static uint8_t hlv_fx[2]; /* RUMBLE, CRUSH 0..100 */
+static int8_t hlv_filter; /* -100 low cut .. +100 high cut */
 /* Three-letter layer tags for the rows. */
 static const char hlv_tags[8][4] = {"ATM", "KIK", "RMB", "HAT", "PRC", "TOP", "SEQ", "CLP"};
 
@@ -75,7 +84,7 @@ static uint8_t hlv_patch[156];
 static void hlv_init(void)
 {
     /* Called once at start; everything not set here starts at zero. */
-    memcpy(hlv_user, hlv_factory_map[3], sizeof hlv_user);
+    memcpy(hlv_user, hlv_factory_map[HLV_USER], sizeof hlv_user);
     memcpy(hlv_pending, hlv_user, sizeof hlv_pending);
     memset(hlv_preset, 0xff, sizeof hlv_preset);
     hlv_edit_knob = 4;
@@ -299,9 +308,23 @@ static void hlv_param_turn(unsigned p, int delta, uint32_t now)
     case HLV_P_VOLUME:
         groove_control_edit(t, 0, delta, 0);
         break;
-    default: { /* RUMBLE, CRUSH, LO CUT, HI CUT: global, live, not saved */
-        volatile uint8_t *fx = &fm1_fx[p - HLV_P_RUMBLE];
-        *fx = (uint8_t)clamp((int)*fx + step, 0, 15);
+    case HLV_P_BPM:
+        groove_tempo_edit(delta);
+        break;
+    case HLV_P_FILTER: {
+        /* Live and global, not saved. Coefficients interpolate the table. */
+        int f = hlv_filter = (int8_t)clamp(hlv_filter + delta, -100, 100), v = f < 0 ? -f : f;
+        unsigned q = v ? (unsigned)(v - 1) * 896U / 99U : 0, i = q >> 6;
+        const uint16_t *table = hlv_cut_table[f > 0];
+        int a = table[i] + (i < 14 ? ((int)table[i + 1] - (int)table[i]) * (int)(q & 63U) / 64 : 0);
+        fm1_cut[0] = (uint16_t)(f < 0 ? a : 0);
+        fm1_cut[1] = (uint16_t)(f > 0 ? a : 0);
+        break;
+    }
+    default: { /* RUMBLE, CRUSH */
+        unsigned k = p - HLV_P_RUMBLE;
+        hlv_fx[k] = (uint8_t)clamp(hlv_fx[k] + delta, 0, 100);
+        fm1_fx[k] = (uint8_t)(k ? (hlv_fx[k] * 15U + 50U) / 100U : hlv_fx[k]);
         break;
     }
     }
@@ -350,18 +373,24 @@ static void hlv_param_value(unsigned p, const struct groove_view *v, char out[12
         break;
     }
     case HLV_P_VOLUME: value = v->volume; break;
-    default: {
-        unsigned fx = fm1_fx[p - HLV_P_RUMBLE];
-        if (!fx) word = "OFF";
-        else pct = (int)(fx * 100U + 7U) / 15;
+    case HLV_P_BPM:
+        if (v->clock_mode && !v->tempo) word = "EXT";
+        else value = v->tempo;
         break;
-    }
+    case HLV_P_FILTER:
+        value = hlv_filter;
+        if (!value) word = "OFF";
+        break;
+    default:
+        pct = hlv_fx[p - HLV_P_RUMBLE];
+        if (!pct) word = "OFF";
+        break;
     }
     if (word) { strcpy(out, word); return; }
     if (pct >= 0) { decimal(out, pct, 1); strcat(out, "%"); return; }
     /* Signed values: MUTATE is negative for ERODE, positive for EVOLVE. */
     out[0] = 0;
-    if (value > 0 && p != HLV_P_HITS && p != HLV_P_VOLUME && p != HLV_P_PUNCH) strcpy(out, "+");
+    if (value > 0 && p != HLV_P_HITS && p != HLV_P_VOLUME && p != HLV_P_PUNCH && p != HLV_P_BPM) strcpy(out, "+");
     decimal(out + strlen(out), value, 1);
 }
 
@@ -563,7 +592,7 @@ static unsigned hlv_level_frame(const struct groove_view v[8])
 }
 static unsigned hlv_box_active(void)
 {
-    if (hlv_edit_down) return 1;
+    if (hlv_edit_down || hlv_home_down) return 1;
     return hlv_note_at && frame_time - hlv_note_at < 800U;
 }
 static void hlv_center(unsigned y, const char *s, unsigned scale, uint16_t fg, uint16_t bg)
@@ -602,7 +631,7 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     if (paint_rendering && (paint_top >= 176 || paint_top + PAINT_ROWS <= 48)) return;
     unsigned active = hlv_box_active(), k = hlv_edit_knob;
     uint32_t sig = signature(active | (hlv_note_kind << 1) | (hlv_mode << 4) | (hlv_edit_down << 6) |
-        ((uint32_t)k << 7) | ((uint32_t)hlv_preset[track] << 10) | ((uint32_t)track << 18), hlv_pending, 4);
+        ((uint32_t)k << 7) | ((uint32_t)hlv_preset[track] << 10) | ((uint32_t)track << 18) | (hlv_home_down << 21), hlv_pending, 4);
     if (sig == cache->hlv[HLV_C_BOX]) return;
     cache->hlv[HLV_C_BOX] = sig;
     if (!active) return; /* Rows repaint themselves when the box closes. */
@@ -611,12 +640,12 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     static const char *const tops[] = {"MODE", "USER", "USER", "USER", "PRESET"};
     static const char *const mids[] = {"", "SAVED", "CANCELLED", "USER ONLY", ""};
     static const char *const subs[] = {"", "", "", "HOME+K1 > USER", ""};
-    unsigned kind = hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
+    unsigned kind = hlv_home_down ? HLV_NOTE_MODE : hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
     const char *top = tops[kind], *mid = mids[kind], *sub = subs[kind];
     char line[28];
     if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K1-K4"; sub = "LET GO SAVE  +PLAY UNDO"; }
     else if (kind == HLV_NOTE_MODE) {
-        mid = hlv_mode_names[hlv_mode]; big = 3;
+        mid = hlv_mode_names[hlv_mode];
         line[0] = 0;
         for (unsigned i = 0; i < 4; ++i) { strcat(line, hlv_param_names[hlv_map()[i]]); strcat(line, " "); }
         sub = line;
@@ -628,8 +657,19 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     uint16_t bg = kind == HLV_NOTE_MODE || kind == HLV_NOTE_SAVED ? mc : PANEL, fg = bg == PANEL ? TEXT : BACK;
     paint_fill(30, 64, 180, 96, bg);
     hlv_center(76, top, 1, fg, bg);
-    hlv_center(96, mid, big, fg, bg);
-    hlv_center(136, sub, 1, fg, bg);
+    hlv_center(kind == HLV_NOTE_MODE ? 92 : 96, mid, big, fg, bg);
+    hlv_center(kind == HLV_NOTE_MODE ? 144 : 136, sub, 1, fg, bg);
+    if (kind == HLV_NOTE_MODE) {
+        /* The mode slider: five stops, the current one is a big block. */
+        paint_fill(36, 76, 168, 8, bg);
+        paint_fill(40, 129, 160, 1, fg);
+        for (unsigned i = 0; i < HLV_MODES; ++i) {
+            unsigned x = 40 + i * 40, on = i == hlv_mode;
+            if (x > 196) x = 196;
+            paint_fill(on ? x - 4 : x - 2, on ? 124 : 127, on ? 9 : 5, on ? 11 : 5, fg);
+        }
+        hlv_center(76, hlv_home_down ? "HOLD HOME  TURN K1" : "MODE", 1, fg, bg);
+    }
 }
 static void hlv_draw(const struct groove_view v[8])
 {

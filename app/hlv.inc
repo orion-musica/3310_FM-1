@@ -110,11 +110,6 @@ static const uint8_t *hlv_map(void)
     if (hlv_mode == HLV_USER) return hlv_edit_down ? hlv_pending : hlv_user;
     return hlv_factory_map[hlv_mode];
 }
-static const char *hlv_source_short(unsigned type)
-{
-    static const char *const names[] = {"DX7", "303", "808", "PSG", "PLK", "SMP"};
-    return type < GROOVE_SOURCES ? names[type] : "---";
-}
 
 /* ---- Rhythm generator: HITS, ROTATE, MUTATE ---------------------------- */
 static unsigned hlv_is_hit(unsigned t, const struct groove_step *cell)
@@ -652,7 +647,6 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     } else if (kind == HLV_NOTE_PRESET) {
         top = hyp_name(track);
         decimal(line, hlv_preset[track] + 1, 2); mid = line; big = 3;
-        sub = hlv_source_short(v->type);
     }
     uint16_t bg = kind == HLV_NOTE_MODE || kind == HLV_NOTE_SAVED ? mc : PANEL, fg = bg == PANEL ? TEXT : BACK;
     paint_fill(30, 64, 180, 96, bg);

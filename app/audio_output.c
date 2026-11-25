@@ -65,8 +65,6 @@ FM1_AUDIO_CODE static void live_fx(int32_t *output)
                 comb_phase = 0; comb_sum = 0;
             }
             wet = pole(&tail_lp, tail, 52);
-            if (wet > 3145728) wet = 3145728 + ((wet - 3145728) >> 2); /* soft knee */
-            else if (wet < -3145728) wet = -3145728 + ((wet + 3145728) >> 2);
             int32_t gain = 4096 - (duck >= 2097152 ? 3600 : ((duck >> 9) * 3600) >> 12); /* Q12 */
             wet = ((((wet >> 8) * gain) >> 5) * (int32_t)rumble * 5) >> 8; /* about rumble/100, no division */
         }

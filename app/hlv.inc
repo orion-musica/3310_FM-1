@@ -7,14 +7,16 @@
  * the notes, so timing stays sample accurate.
  *
  * Knobs on the ARRANGE page:
- *   SELECT    track 1..8
- *   PRESETS   sound (program) of the selected track
+ *   SELECT    track (= layer) 1..8
+ *   PRESETS   layer preset: sound and pattern of the selected layer
  *   ALGORITHM track length 16/32/48/64
- *   K1        mode RHYTHM / GROOVE / SPACE / USER
- *   K2..K4    the mode's three parameters
- * USER mode: hold EDIT, turn K2..K4 to pick parameters, release EDIT to keep
+ *   HOME+K1   mode RHYTHM / GROOVE / SPACE / USER (a short HOME tap: projects)
+ *   K1..K4    the mode's four parameters; K1 is a live master effect
+ * USER mode: hold EDIT, turn K1..K4 to pick parameters, release EDIT to keep
  * the new map, EDIT+PLAY to cancel. A short EDIT tap opens the sound editor.
  */
+#include "hypno.h"
+#include "audio_output.h"
 
 enum { HLV_RHYTHM, HLV_GROOVE, HLV_SPACE, HLV_USER, HLV_MODES };
 enum {
@@ -22,6 +24,7 @@ enum {
     HLV_P_GATE, HLV_P_SWING, HLV_P_CHANCE,
     HLV_P_CUTOFF, HLV_P_PUNCH,
     HLV_P_THROW, HLV_P_REVERB, HLV_P_VOLUME,
+    HLV_P_RUMBLE, HLV_P_CRUSH, HLV_P_LOCUT, HLV_P_HICUT, /* master FX, fm1_fx[0..3] */
     HLV_PARAMS
 };
 enum { HLV_NOTE_MODE, HLV_NOTE_SAVED, HLV_NOTE_CANCEL, HLV_NOTE_USER_ONLY, HLV_NOTE_PRESET };
@@ -33,19 +36,23 @@ enum { HLV_NOTE_MODE, HLV_NOTE_SAVED, HLV_NOTE_CANCEL, HLV_NOTE_USER_ONLY, HLV_N
 
 static const char *const hlv_param_names[HLV_PARAMS] = {
     "HITS", "ROTATE", "MUTATE", "GATE", "SWING", "CHANCE",
-    "CUTOFF", "PUNCH", "THROW", "REVERB", "VOLUME"};
+    "CUTOFF", "PUNCH", "THROW", "REVERB", "VOLUME", "RUMBLE", "CRUSH", "LO CUT", "HI CUT"};
 static const char *const hlv_mode_names[HLV_MODES] = {"RHYTHM", "GROOVE", "SPACE", "USER"};
 /* Red, amber, cyan and the USER mode's young-grass green (RGB565). */
 /* 3310: every mode uses the LCD ink; the mode chip names the mode. */
 static const uint16_t hlv_mode_colors[HLV_MODES] = {HLV_RED, HLV_RED, HLV_RED, HLV_RED};
-static const uint8_t hlv_factory_map[3][3] = {
-    {HLV_P_HITS, HLV_P_ROTATE, HLV_P_MUTATE},
-    {HLV_P_GATE, HLV_P_SWING, HLV_P_CHANCE},
-    {HLV_P_CUTOFF, HLV_P_PUNCH, HLV_P_THROW}};
+/* K1 of every mode is one of the four live master effects. */
+static const uint8_t hlv_factory_map[4][4] = {
+    {HLV_P_RUMBLE, HLV_P_HITS, HLV_P_ROTATE, HLV_P_MUTATE},
+    {HLV_P_CRUSH, HLV_P_GATE, HLV_P_SWING, HLV_P_CHANCE},
+    {HLV_P_HICUT, HLV_P_CUTOFF, HLV_P_PUNCH, HLV_P_THROW},
+    {HLV_P_LOCUT, HLV_P_HITS, HLV_P_REVERB, HLV_P_VOLUME}};
+/* Three-letter layer tags for the rows. */
+static const char hlv_tags[8][4] = {"ATM", "KIK", "RMB", "HAT", "PRC", "TOP", "SEQ", "CLP"};
 
 static unsigned hlv_mode;
-static uint8_t hlv_user[3], hlv_pending[3];
-static unsigned hlv_edit_down, hlv_edit_used, hlv_edit_knob;
+static uint8_t hlv_user[4], hlv_pending[4], hlv_preset[GROOVE_TRACKS];
+static unsigned hlv_edit_down, hlv_edit_used, hlv_edit_knob, hlv_home_down, hlv_home_used;
 static unsigned hlv_note_kind;
 static uint32_t hlv_note_at;
 static uint32_t hlv_seed;
@@ -68,9 +75,10 @@ static uint8_t hlv_patch[156];
 static void hlv_init(void)
 {
     /* Called once at start; everything not set here starts at zero. */
-    memcpy(hlv_user, hlv_factory_map[0], sizeof hlv_user);
+    memcpy(hlv_user, hlv_factory_map[3], sizeof hlv_user);
     memcpy(hlv_pending, hlv_user, sizeof hlv_pending);
-    hlv_edit_knob = 3;
+    memset(hlv_preset, 0xff, sizeof hlv_preset);
+    hlv_edit_knob = 4;
     hlv_seed = 0x48c27a13U;
     memset(hlv_hits, HLV_ORIG, sizeof hlv_hits);
     memset(hlv_chance, 8, sizeof hlv_chance);
@@ -291,8 +299,11 @@ static void hlv_param_turn(unsigned p, int delta, uint32_t now)
     case HLV_P_VOLUME:
         groove_control_edit(t, 0, delta, 0);
         break;
-    default:
+    default: { /* RUMBLE, CRUSH, LO CUT, HI CUT: global, live, not saved */
+        volatile uint8_t *fx = &fm1_fx[p - HLV_P_RUMBLE];
+        *fx = (uint8_t)clamp((int)*fx + step, 0, 15);
         break;
+    }
     }
 }
 static void hlv_param_value(unsigned p, const struct groove_view *v, char out[12])
@@ -338,7 +349,13 @@ static void hlv_param_value(unsigned p, const struct groove_view *v, char out[12
         pct = (sends[0] * 100 + 7) / 15;
         break;
     }
-    default: value = v->volume; break;
+    case HLV_P_VOLUME: value = v->volume; break;
+    default: {
+        unsigned fx = fm1_fx[p - HLV_P_RUMBLE];
+        if (!fx) word = "OFF";
+        else pct = (int)(fx * 100U + 7U) / 15;
+        break;
+    }
     }
     if (word) { strcpy(out, word); return; }
     if (pct >= 0) { decimal(out, pct, 1); strcat(out, "%"); return; }
@@ -359,21 +376,21 @@ static int hlv_edit_gesture(const struct fm1_controls *c, uint32_t pressed, uint
         if (!(pressed & BUTTON(EDIT)) || (c->buttons & ~BUTTON(EDIT))) return 0;
         hlv_edit_down = 1;
         hlv_edit_used = 0;
-        hlv_edit_knob = 3;
+        hlv_edit_knob = 4;
         memcpy(hlv_pending, hlv_user, sizeof hlv_pending);
         return 1;
     }
     if (pressed & BUTTON(PLAY)) {
         *play_handled = 1;
         hlv_edit_down = 0;
-        hlv_edit_knob = 3;
+        hlv_edit_knob = 4;
         memcpy(hlv_pending, hlv_user, sizeof hlv_pending);
         if (hlv_mode == HLV_USER) hlv_note(HLV_NOTE_CANCEL, now);
         return 1;
     }
     if (!(c->buttons & BUTTON(EDIT))) {
         hlv_edit_down = 0;
-        hlv_edit_knob = 3;
+        hlv_edit_knob = 4;
         if (hlv_edit_used) {
             if (hlv_mode == HLV_USER) {
                 memcpy(hlv_user, hlv_pending, sizeof hlv_user);
@@ -389,19 +406,65 @@ static int hlv_edit_gesture(const struct fm1_controls *c, uint32_t pressed, uint
         if (page == TONE_EDIT && groove_pad_count(track)) drum_parts[track] = (uint8_t)drum;
         return 1;
     }
-    for (unsigned i = 0; i < 3; ++i) {
-        int delta = c->encoders[3 + i];
+    for (unsigned i = 0; i < 4; ++i) {
+        int delta = c->encoders[2 + i];
         if (!delta) continue;
         hlv_edit_used = 1;
         if (hlv_mode != HLV_USER) { hlv_note(HLV_NOTE_USER_ONLY, now); continue; }
         int next = clamp((int)hlv_pending[i] + (delta > 0 ? 1 : -1), 0, HLV_PARAMS - 1);
-        for (unsigned j = 0; j < 3; ++j)
+        for (unsigned j = 0; j < 4; ++j)
             if (j != i && hlv_pending[j] == (uint8_t)next) hlv_pending[j] = hlv_pending[i];
         hlv_pending[i] = (uint8_t)next;
         hlv_edit_knob = i;
     }
-    if (c->encoders[2]) hlv_edit_used = 1;
     return 1;
+}
+/* HOME on ARRANGE acts on release: a tap opens the projects, HOME held while
+ * K1 turns changes the mode. Other HOME combinations keep their meaning.
+ * Runs before the panel shortcuts; returns 1 when the event was consumed. */
+static int hlv_home_gesture(const struct fm1_controls *c, uint32_t pressed, uint32_t now)
+{
+    if (page != HLV) { hlv_home_down = 0; return 0; }
+    if (!hlv_home_down) {
+        if (!(pressed & BUTTON(HOME)) || (c->buttons & ~BUTTON(HOME))) return 0;
+        hlv_home_down = 1;
+        hlv_home_used = 0;
+        return 1;
+    }
+    if (!(c->buttons & BUTTON(HOME))) {
+        hlv_home_down = 0;
+        if (hlv_home_used) return 1;
+        preset_refresh(); project_result = 0; page = PRESET_BROWSER;
+        return 1;
+    }
+    if (c->encoders[2]) {
+        hlv_home_used = 1;
+        unsigned mode = (unsigned)clamp((int)hlv_mode + c->encoders[2], 0, HLV_MODES - 1);
+        if (mode != hlv_mode) { hlv_mode = mode; hlv_note(HLV_NOTE_MODE, now); }
+        return 1;
+    }
+    if ((c->buttons & ~BUTTON(HOME)) || encoder_active(c->encoders)) hlv_home_used = 1;
+    return 0;
+}
+/* PRESETS: the next preset of this track's layer, built into the scratch
+ * project and applied to this track only (sound, pattern, length; undoable). */
+static void hlv_layer_preset(unsigned t, int delta, uint32_t now)
+{
+    int n = (int)hyp_count(t), i = hlv_preset[t] == 0xffU ? (delta > 0 ? -1 : 0) : hlv_preset[t];
+    i = ((i + delta) % n + n) % n;
+    struct groove_project *p = groove_project_scratch();
+    int r = groove_project_capture(p);
+    if (!r) {
+        hyp_build(t, (unsigned)i, &p->preset[t], p->step[t]);
+        r = groove_timbre_apply(t, p);
+    }
+    if (r) { notice = r == GROOVE_PROJECT_MEMORY ? "NO MEMORY FOR SOUND" : "PRESET FAILED"; notice_until = now + 1500U; return; }
+    unsigned pages = p->preset[t].sequence_pages;
+    groove_sequence_length_set(t, pages ? pages * 16U : 64U);
+    hlv_preset[t] = (uint8_t)i;
+    hlv_based[t] = 0; hlv_hits[t] = HLV_ORIG; hlv_rot[t] = 0; hlv_mut[t] = 0; hlv_cut[t] = 0;
+    hlv_chance[t] = hlv_gate[t] = 8;
+    hlv_note(HLV_NOTE_PRESET, now);
 }
 static void hlv_controls(const struct fm1_controls *c, uint32_t now)
 {
@@ -410,18 +473,11 @@ static void hlv_controls(const struct fm1_controls *c, uint32_t now)
         sequence_length_adjust(c->encoders[1]);
         if (!hlv_neutral(track)) hlv_apply(track);
     }
-    if (c->encoders[6]) {
-        groove_control_edit(track, c->encoders[6], 0, 0);
-        hlv_note(HLV_NOTE_PRESET, now);
-    }
-    if (c->encoders[2]) {
-        unsigned mode = (unsigned)clamp((int)hlv_mode + c->encoders[2], 0, HLV_MODES - 1);
-        if (mode != hlv_mode) { hlv_mode = mode; hlv_note(HLV_NOTE_MODE, now); }
-    }
+    if (c->encoders[6]) hlv_layer_preset(track, c->encoders[6] > 0 ? 1 : -1, now);
     const uint8_t *map = hlv_map();
-    for (unsigned i = 0; i < 3; ++i)
-        if (c->encoders[3 + i])
-            hlv_param_turn(map[i], fm_encoder_delta(3 + i, c->encoders[3 + i]), now);
+    for (unsigned i = 0; i < 4; ++i)
+        if (c->encoders[2 + i])
+            hlv_param_turn(map[i], fm_encoder_delta(2 + i, c->encoders[2 + i]), now);
 }
 /* Loop-synchronous work: MUTATE at each track's loop start, THROW release. */
 static void hlv_poll(uint32_t now)
@@ -443,6 +499,58 @@ static void hlv_poll(uint32_t now)
         }
         hlv_last_step[t] = v.play_step;
     }
+}
+
+/* ---- LED show: SNAKE on the keyboard ------------------------------------ */
+/* While ARRANGE plays, a snake crawls over the 27 key LEDs one key per
+ * sixteenth, bouncing at the ends and hunting a blinking dot. Eating grows
+ * it; at ten keys the board flashes and it starts small again. Every kick
+ * inverts the whole keyboard, every clap throws the dot somewhere new, each
+ * track flashes its own panel button on its hits and the six remaining
+ * buttons run a ring that turns round every bar. */
+static uint8_t hlv_snake[10] = {2, 1, 0}, hlv_snake_len = 3, hlv_food = 20, hlv_led_step = 0xff, hlv_flash, hlv_clap;
+static int8_t hlv_dir = 1;
+static int hlv_leds(const struct groove_view *v)
+{
+    static const uint8_t pulse[8] = {FX, PLAY, REC, OCT_UP, SCL, OCT_DOWN, ARP, HOME};
+    static const uint8_t ring[6] = {ENV, LFO, EDIT, GLO, SAVE, SEQ};
+    unsigned clock = 0xffU, hits = 0;
+    for (unsigned t = 0; t < 8; ++t) {
+        if (clock == 0xffU && v[t].playing) clock = v[t].play_step;
+        if (v[t].audible && v[t].level >= 64) hits |= 1U << t;
+    }
+    if (clock == 0xffU) return 0;
+    if (clock != hlv_led_step) {
+        hlv_led_step = (uint8_t)clock;
+        int head = hlv_snake[0] + hlv_dir;
+        if (head < 0 || head > 26) { hlv_dir = (int8_t)-hlv_dir; head = hlv_snake[0] + hlv_dir; }
+        memmove(hlv_snake + 1, hlv_snake, sizeof hlv_snake - 1);
+        hlv_snake[0] = (uint8_t)head;
+        if (head == hlv_food) {
+            if (++hlv_snake_len > 9) { hlv_snake_len = 3; hlv_flash = 4; }
+            hlv_food = (uint8_t)(hlv_rand() % 27U);
+        }
+        if (hlv_flash) --hlv_flash;
+    }
+    if ((hits & 0x80U) && !hlv_clap) hlv_food = (uint8_t)(hlv_rand() % 27U);
+    hlv_clap = (uint8_t)(hits >> 7);
+    uint32_t keys = 0, buttons = 0;
+    for (unsigned i = 0; i < hlv_snake_len; ++i) keys |= 1U << hlv_snake[i];
+    if ((frame_time / 90U) & 1U) keys |= 1U << hlv_food;
+    if ((hits & 2U) || hlv_flash) keys ^= 0x7ffffffU;
+    for (unsigned t = 0; t < 8; ++t)
+        if ((hits >> t) & 1U) buttons |= 1U << pulse[t];
+    unsigned r = clock % 6U;
+    buttons |= 1U << ring[(clock / 16U) & 1U ? 5U - r : r];
+    uint32_t changed = keys ^ led_cache;
+    for (unsigned key = 0; key < 27; ++key)
+        if (changed & (1U << key)) fm1_led_set(key + 14, (keys >> key) & 1U);
+    led_cache = keys;
+    changed = buttons ^ button_led_cache;
+    for (unsigned key = 0; key < 14; ++key)
+        if (changed & (1U << key)) fm1_led_set(key, (buttons >> key) & 1U);
+    button_led_cache = (uint16_t)buttons;
+    return 1;
 }
 
 /* ---- Drawing (240 x 240) ------------------------------------------------ */
@@ -493,9 +601,8 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     /* x 30..209 / 8..231, y 48..175: whole 16-row bands. */
     if (paint_rendering && (paint_top >= 176 || paint_top + PAINT_ROWS <= 48)) return;
     unsigned active = hlv_box_active(), k = hlv_edit_knob;
-    uint32_t sig = active | (hlv_note_kind << 1) | (hlv_mode << 4) | (hlv_edit_down << 6) |
-        ((uint32_t)k << 7) | ((uint32_t)hlv_pending[0] << 9) | ((uint32_t)hlv_pending[1] << 13) |
-        ((uint32_t)hlv_pending[2] << 17) | ((uint32_t)v->program << 21);
+    uint32_t sig = signature(active | (hlv_note_kind << 1) | (hlv_mode << 4) | (hlv_edit_down << 6) |
+        ((uint32_t)k << 7) | ((uint32_t)hlv_preset[track] << 10) | ((uint32_t)track << 18), hlv_pending, 4);
     if (sig == cache->hlv[HLV_C_BOX]) return;
     cache->hlv[HLV_C_BOX] = sig;
     if (!active) return; /* Rows repaint themselves when the box closes. */
@@ -503,18 +610,19 @@ static void hlv_draw_box(const struct groove_view *v, uint16_t mc)
     /* Notes: a small title, a big middle line and a small hint. */
     static const char *const tops[] = {"MODE", "USER", "USER", "USER", "PRESET"};
     static const char *const mids[] = {"", "SAVED", "CANCELLED", "USER ONLY", ""};
-    static const char *const subs[] = {"", "", "", "K1 > USER", ""};
+    static const char *const subs[] = {"", "", "", "HOME+K1 > USER", ""};
     unsigned kind = hlv_edit_down ? HLV_NOTE_USER_ONLY : hlv_note_kind, big = 2;
     const char *top = tops[kind], *mid = mids[kind], *sub = subs[kind];
     char line[28];
-    if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K2-K4"; sub = "LET GO SAVE  +PLAY UNDO"; }
+    if (hlv_edit_down && hlv_mode == HLV_USER) { top = "EDIT"; mid = "TURN K1-K4"; sub = "LET GO SAVE  +PLAY UNDO"; }
     else if (kind == HLV_NOTE_MODE) {
         mid = hlv_mode_names[hlv_mode]; big = 3;
         line[0] = 0;
-        for (unsigned i = 0; i < 3; ++i) { strcat(line, hlv_param_names[hlv_map()[i]]); strcat(line, " "); }
+        for (unsigned i = 0; i < 4; ++i) { strcat(line, hlv_param_names[hlv_map()[i]]); strcat(line, " "); }
         sub = line;
     } else if (kind == HLV_NOTE_PRESET) {
-        decimal(line, v->program + 1, 3); mid = line; big = 3;
+        top = hyp_name(track);
+        decimal(line, hlv_preset[track] + 1, 2); mid = line; big = 3;
         sub = hlv_source_short(v->type);
     }
     uint16_t bg = kind == HLV_NOTE_MODE || kind == HLV_NOTE_SAVED ? mc : PANEL, fg = bg == PANEL ? TEXT : BACK;
@@ -564,7 +672,7 @@ static void hlv_draw(const struct groove_view v[8])
         if (t == track) paint_fill(0, y, 3, 14, mc);
         uint16_t bg = lit ? mc : PANEL;
         hlv_icon(6, y, t, lit ? BACK : TEXT, bg); /* 2-frame: inverts on hits */
-        text(24, y + 4, hlv_source_short(v[t].type), 1, t == track ? mc : v[t].muted ? DIM : TEXT, BACK);
+        text(24, y + 4, hlv_tags[t], 1, t == track ? mc : v[t].muted ? DIM : TEXT, BACK);
         for (unsigned b = 0; b < 16; ++b) {
             unsigned x = 46 + (b / 4) * 42 + (b % 4) * 10;
             if (b * 4 >= length) { frame(x, y + 2, 8, 10, HLV_OFF); continue; }
@@ -604,18 +712,17 @@ static void hlv_draw(const struct groove_view v[8])
         }
     }
     hlv_draw_box(sel, mc);
-    /* K1 mode and the three parameters of this mode. */
-    knob(0, "K1 MODE", hlv_mode_names[mode], mc);
+    /* The four parameters of this mode (the mode itself is in the header). */
     const uint8_t *map = hlv_map();
-    for (unsigned i = 0; i < 3; ++i) {
+    for (unsigned i = 0; i < 4; ++i) {
         char label[12], value[12];
         strcpy(label, hlv_param_names[map[i]]);
         if (mode == HLV_USER && hlv_edit_down && hlv_pending[i] != hlv_user[i]) strcat(label, "*");
         hlv_param_value(map[i], sel, value);
-        knob(1 + i, label, value, mc);
+        knob(i, label, value, mc);
     }
     if (!(paint_rendering && paint_top + PAINT_ROWS <= 229)) {
-        const char *hint = notice ? notice : hlv_edit_down ? "EDIT HELD" : "SEL TRACK  PRE SOUND  ALG LEN";
+        const char *hint = notice ? notice : hlv_edit_down ? "EDIT HELD" : "PRE PRESET  ALG LEN  HOME+K1 MODE";
         uint32_t sig = signature(0, hint, (unsigned)strlen(hint));
         if (sig != cache->hlv[HLV_C_HINT]) {
             cache->hlv[HLV_C_HINT] = sig;

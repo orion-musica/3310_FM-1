@@ -7,4 +7,6 @@ void fm1_output_reset(void);
 /* Finish one synthesized block: master gain, USB, Bluetooth, USB recording.
  * Audio ISR only; output holds FM1_BLOCK_WORDS Q23 samples. */
 FM1_AUDIO_CODE void fm1_output_mix(int32_t *output);
+/* 3310 live master FX: RUMBLE, CRUSH, LO CUT, HI CUT, each 0 (off)..15. */
+extern volatile uint8_t fm1_fx[4];
 #endif

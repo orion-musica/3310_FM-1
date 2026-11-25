@@ -30,8 +30,8 @@ jobs:
           $env:FM1_SOURCE_URL = "https://github.com/${{ github.repository }}/archive/${{ github.sha }}.zip"
           ./tools/Make-Site.ps1
 
-      - name: Size report (only when the build fails)
-        if: failure()
+      - name: Size report
+        if: always()
         shell: pwsh
         run: |
           $nm = Join-Path $env:FM1_PI32_TOOLCHAIN 'bin\llvm-nm.exe'
@@ -39,7 +39,7 @@ jobs:
           if (!(Test-Path $elf)) { Write-Host 'No ELF to inspect.'; exit 0 }
           $all = & $nm --print-size --size-sort --radix=d $elf
           Write-Host '--- 100 largest symbols ---'
-          $all | Select-Object -Last 100 | ForEach-Object { Write-Host $_ }
+          $all | ForEach-Object { Write-Host $_ }
           Write-Host '--- 3310 / screen symbols ---'
           $all | Select-String 'hlv|boot_draw|screen|paint|draw|text|glyph|font' | Select-Object -Last 80 | ForEach-Object { Write-Host $_ }
 

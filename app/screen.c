@@ -1202,10 +1202,8 @@ static __attribute__((noinline, cold, minsize)) void boot_draw(void)
         paint_fill(12, 16, 2, 2, TEXT);
         frame(222, 14, 12, 16, TEXT);
         paint_fill(225, 11, 6, 3, TEXT);
-        text(48, 52, "HYPNOTIC", 3, TEXT, BACK);
-        text(84, 78, "MIKE", 3, TEXT, BACK);
-        text(75, 108, "HYPNOTIC TECHNO", 1, TEXT, BACK);
-        text(87, 122, "8 TRACKS FM", 1, DIM, BACK);
+        text(48, 74, "HYPNOTIC", 3, TEXT, BACK);
+        text(84, 102, "MIKE", 3, TEXT, BACK);
         text(96, 198, "MENU", 2, TEXT, BACK);
         text((240 - 6 * (sizeof "FM1 OPEN " FM1_RELEASE_VERSION - 1)) / 2, 226, "FM1 OPEN " FM1_RELEASE_VERSION, 1, DIM, BACK);
     }

@@ -521,7 +521,7 @@ static void hlv_poll(uint32_t now)
 }
 
 /* ---- SAVE menu ---------------------------------------------------------- */
-/* 1 SAVE PROJECT, 2 LOAD PROJECT (user slots), 3 LOAD PRESET (the sixteen
+/* 1 SAVE PROJECT, 2 LOAD SAVED (user slots), 3 LOAD TEMPLATE (the sixteen
  * HYPNOTIC sets), 4 NEW PROJECT (YES / NO first). SELECT, K1 or PRESETS move,
  * keys 1-4 pick, SAVE opens, HOME goes back. */
 static unsigned hlv_menu_item, hlv_menu_confirm;
@@ -579,7 +579,7 @@ static void hlv_menu_draw(void)
         text(6, 224, "KEY1/SAVE YES  KEY2/HOME NO", 1, DIM, BACK);
         return;
     }
-    static const char *const items[4] = {"SAVE PROJECT", "LOAD PROJECT", "LOAD PRESET", "NEW PROJECT"};
+    static const char *const items[4] = {"SAVE PROJECT", "LOAD SAVED", "LOAD TEMPLATE", "NEW PROJECT"};
     for (unsigned i = 0; i < 4; ++i) {
         unsigned y = 54 + i * 38, on = i == hlv_menu_item;
         paint_fill(6, y, 228, 32, on ? TEXT : PANEL);

@@ -940,7 +940,7 @@ static __attribute__((noinline)) void preset_draw(void)
     if (cache->middle_cache == sig) return;
     cache->middle_cache = sig;
     paint_fill(0, 30, 240, 210, BACK);
-    text(8, 42, preset_bank ? "FACTORY PRESETS" : "USER PROJECTS", 1, DIM, BACK);
+    text(8, 42, preset_bank ? "BUILT-IN TEMPLATES" : "YOUR SAVES", 1, DIM, BACK);
     number(8, 65, preset_slot + 1, 2, 2, ACCENT, BACK);
     text(38, 65, "/16", 2, DIM, BACK);
     text(8, 97, project_stored_result < 0 ? "READ ERROR" : project_stored, 2, TEXT, BACK);
@@ -1237,7 +1237,7 @@ static void draw_page_body(const struct fm1_ble_status *ble)
         memset(cache->meter_cache, 0xff, sizeof cache->meter_cache);
         memset(cache->hlv, 0xff, sizeof cache->hlv);
         if (visible == PROJECT || visible == PRESET_BROWSER)
-            text(8, 8, visible == PROJECT ? "SAVE PROJECT" : preset_bank ? "LOAD PRESET" : "LOAD PROJECT", 2, ACCENT, BACK);
+            text(8, 8, visible == PROJECT ? "SAVE PROJECT" : preset_bank ? "LOAD TEMPLATE" : "LOAD SAVED", 2, ACCENT, BACK);
     }
     if (visible == STARTUP) { boot_draw(); return; }
     const struct groove_view *views = frame_views, *v = &views[track];

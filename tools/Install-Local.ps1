@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
-# 3310: one-click local install.
+# DAW DANNY: one-click local install.
 # 1. finds the JieLi toolchain   2. builds the firmware and the installer page
 # 3. starts a local server and opens the installer in Chrome or Edge.
-# Run from INSTALL-3310.bat in the repository root.
+# Run from INSTALL-DAW-DANNY.bat in the repository root.
 [CmdletBinding()]
 param(
     [switch]$SkipBuild,
@@ -22,7 +22,7 @@ function Stop-WithMessage($text) {
 }
 
 Say ''
-Say '  3310 - instalacja lokalna' 'Green'
+Say '  DAW DANNY - instalacja lokalna' 'Green'
 Say '  --------------------' 'DarkGray'
 Say ''
 
@@ -61,13 +61,13 @@ if (-not $SkipBuild) {
     }
     if ([string]::IsNullOrWhiteSpace($source)) {
         Say ''
-        Say 'Podaj adres repozytorium na GitHubie (np. https://github.com/login/3310-fm1).'
+        Say 'Podaj adres repozytorium na GitHubie (np. https://github.com/login/daw-danny-fm1).'
         Say 'Jesli jeszcze go nie masz, nacisnij Enter - uzyje adresu tymczasowego, do testu lokalnego.'
         $answer = Read-Host 'Adres'
         if ($answer -match '^https://github\.com/[^/\s]+/[^/\s]+') {
             $source = ($answer.TrimEnd('/')) + '/archive/refs/heads/main.zip'
         } else {
-            $source = 'https://github.com/3310-fm1/3310-fm1/archive/refs/heads/main.zip'
+            $source = 'https://github.com/daw-danny-fm1/daw-danny-fm1/archive/refs/heads/main.zip'
             Say 'Adres tymczasowy - przed publikacja zbuduj ponownie z prawdziwym adresem.' 'Yellow'
         }
     }

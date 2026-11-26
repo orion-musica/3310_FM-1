@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
- * 3310 - ARRANGE page for FM1 Open (monochrome LCD edition of HASTA LA VISTA).
+ * DAW DANNY - ARRANGE page for FM1 Open (monochrome LCD edition of HASTA LA VISTA).
  *
  * Included once by screen.c, after its drawing helpers and before
  * apply_controls(). Everything here runs on the control task and only uses
@@ -29,7 +29,7 @@ enum {
 };
 enum { HLV_NOTE_MODE, HLV_NOTE_SAVED, HLV_NOTE_CANCEL, HLV_NOTE_USER_ONLY, HLV_NOTE_PRESET };
 #define HLV_ORIG 0xffU
-#define HLV_RED 0x4287U /* 3310: one ink */
+#define HLV_RED 0x4287U /* DAW DANNY: one ink */
 #define HLV_DARK_RED 0x8531U
 #define HLV_GREY 0x4287U
 #define HLV_OFF 0x8531U
@@ -39,7 +39,7 @@ static const char *const hlv_param_names[HLV_PARAMS] = {
     "CUTOFF", "PUNCH", "THROW", "REVERB", "VOLUME", "RUMBLE", "CRUSH", "LO/HI CUT", "BPM"};
 static const char *const hlv_mode_names[HLV_MODES] = {"LIVE", "RHYTHM", "GROOVE", "SPACE", "USER"};
 /* Red, amber, cyan and the USER mode's young-grass green (RGB565). */
-/* 3310: every mode uses the LCD ink; the mode chip names the mode. */
+/* DAW DANNY: every mode uses the LCD ink; the mode chip names the mode. */
 static const uint16_t hlv_mode_colors[HLV_MODES] = {HLV_RED, HLV_RED, HLV_RED, HLV_RED, HLV_RED};
 /* LIVE: master effects and tempo. The other modes keep the LO/HI CUT
  * filter on K1; the last row is the starting USER map. */
@@ -660,7 +660,7 @@ static void hlv_center(unsigned y, const char *s, unsigned scale, uint16_t fg, u
     unsigned w = (unsigned)strlen(s) * 6U * scale;
     text(w < 180 ? 30 + (180 - w) / 2 : 30, y, s, scale, fg, bg);
 }
-/* 3310: one 12x12 phone symbol per layer: ATMOS note, KICK bell, RUMBLE
+/* DAW DANNY: one 12x12 phone symbol per layer: ATMOS note, KICK bell, RUMBLE
  * battery, HATS keypad, PERC handset, TOPS signal, SEQ snake, CLAP envelope.
  * Bit 11 is the leftmost pixel. */
 static const uint16_t hlv_icons[8][12] = {

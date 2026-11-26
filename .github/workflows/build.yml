@@ -1,6 +1,6 @@
-# 3310: build the firmware and the installer site in the cloud (GitHub Actions).
+# DAW DANNY: build the firmware and the installer site in the cloud (GitHub Actions).
 # Runs on every push to main, or by hand: Actions > build > Run workflow.
-# Result: the "3310" download (firmware, installer, checksum) and, if GitHub Pages
+# Result: the "DAW DANNY" download (firmware, installer, checksum) and, if GitHub Pages
 # is set to "GitHub Actions", the live site with a ready installer.
 name: build
 
@@ -23,7 +23,7 @@ jobs:
         timeout-minutes: 40
         run: ./tools/ci/Install-JieLi.ps1
 
-      - name: Build 3310 (firmware + installer + site)
+      - name: Build DAW DANNY (firmware + installer + site)
         shell: pwsh
         timeout-minutes: 30
         run: |
@@ -40,12 +40,12 @@ jobs:
           $all = & $nm --print-size --size-sort --radix=d $elf
           Write-Host '--- 100 largest symbols ---'
           $all | Select-Object -Last 100 | ForEach-Object { Write-Host $_ }
-          Write-Host '--- 3310 / screen symbols ---'
+          Write-Host '--- DAW DANNY / screen symbols ---'
           $all | Select-String 'hlv|boot_draw|screen|paint|draw|text|glyph|font' | Select-Object -Last 80 | ForEach-Object { Write-Host $_ }
 
       - uses: actions/upload-artifact@v4
         with:
-          name: '3310'
+          name: 'DAW-DANNY'
           path: |
             docs/downloads/
             docs/install/flasher.html

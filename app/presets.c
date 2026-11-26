@@ -5,7 +5,7 @@
 #include "hypno.h"
 #include <string.h>
 
-/* 3310 hypnotic layers. Each of the eight tracks is one layer of a hypnotic
+/* DAW DANNY hypnotic layers. Each of the eight tracks is one layer of a hypnotic
  * techno track, in the order a live set brings them in:
  *   1 ATMOS  DX7 drone      2 KICK  808        3 RUMBLE 303 sub
  *   4 HATS   808 offbeats   5 PERC  pluck poly 6 TOPS   808 ride/shaker

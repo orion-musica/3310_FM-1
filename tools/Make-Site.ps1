@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-only WITH GPL-3.0-linking-exception
-# 3310: build the distribution package and refresh the site in docs/.
+# DAW DANNY: build the distribution package and refresh the site in docs/.
 #   docs/install/flasher.html        official FM1 Open web installer with this firmware inside
-#   (docs/install/index.html is the 3310 installer page that checks the build and opens flasher.html)
-#   docs/downloads/3310.fwsc   the firmware package
-#   docs/downloads/3310_README.md     technical notes
+#   (docs/install/index.html is the DAW DANNY installer page that checks the build and opens flasher.html)
+#   docs/downloads/DAW-DANNY.fwsc   the firmware package
+#   docs/downloads/DAW-DANNY_README.md     technical notes
 # Usage (PowerShell, from the repository root):
 #   $env:FM1_PI32_TOOLCHAIN = 'C:\JL\pi32'
 #   $env:FM1_SOURCE_URL = 'https://github.com/<user>/<repo>/archive/refs/heads/main.zip'
@@ -22,7 +22,7 @@ if ([string]::IsNullOrWhiteSpace($SourceUrl) -or -not $SourceUrl.StartsWith('htt
     throw 'Set FM1_SOURCE_URL to the HTTPS address of this repository''s source archive, for example https://github.com/<user>/<repo>/archive/refs/heads/main.zip'
 }
 
-Write-Host '3310: building the distribution package...'
+Write-Host 'DAW DANNY: building the distribution package...'
 & (Join-Path $root 'sdk\Build.ps1') -Package -Toolchain $Toolchain -SourceUrl $SourceUrl
 
 $installer = Join-Path $root 'build\official-web\FM1-Official-Open-Source.html'
@@ -36,15 +36,15 @@ if ($text.Contains('Build incomplete')) { throw 'The installer page reports an i
 $docs = Join-Path $root 'docs'
 foreach ($dir in @('install', 'downloads')) { [IO.Directory]::CreateDirectory((Join-Path $docs $dir)) | Out-Null }
 Copy-Item -LiteralPath $installer -Destination (Join-Path $docs 'install\flasher.html') -Force
-Copy-Item -LiteralPath $firmware -Destination (Join-Path $docs 'downloads\3310.fwsc') -Force
-Copy-Item -LiteralPath (Join-Path $root '3310_README.md') -Destination (Join-Path $docs 'downloads\3310_README.md') -Force
+Copy-Item -LiteralPath $firmware -Destination (Join-Path $docs 'downloads\DAW-DANNY.fwsc') -Force
+Copy-Item -LiteralPath (Join-Path $root 'DAW-DANNY_README.md') -Destination (Join-Path $docs 'downloads\DAW-DANNY_README.md') -Force
 $nojekyll = Join-Path $docs '.nojekyll'
 if (!(Test-Path -LiteralPath $nojekyll)) { [IO.File]::WriteAllText($nojekyll, '') }
 
-$hash = (Get-FileHash -LiteralPath (Join-Path $docs 'downloads\3310.fwsc') -Algorithm SHA256).Hash.ToLowerInvariant()
-[IO.File]::WriteAllText((Join-Path $docs 'downloads\SHA256SUMS.txt'), "$hash  3310.fwsc`n")
+$hash = (Get-FileHash -LiteralPath (Join-Path $docs 'downloads\DAW-DANNY.fwsc') -Algorithm SHA256).Hash.ToLowerInvariant()
+[IO.File]::WriteAllText((Join-Path $docs 'downloads\SHA256SUMS.txt'), "$hash  DAW-DANNY.fwsc`n")
 # The landing page reads this to show that the installer is ready (works from file:// too).
-$bytes = (Get-Item -LiteralPath (Join-Path $docs 'downloads\3310.fwsc')).Length
+$bytes = (Get-Item -LiteralPath (Join-Path $docs 'downloads\DAW-DANNY.fwsc')).Length
 $stamp = (Get-Date).ToString('yyyy-MM-dd HH:mm')
 $info = "window.HLV_BUILD = {built: true, sha256: '$hash', bytes: $bytes, date: '$stamp'};`n"
 [IO.File]::WriteAllText((Join-Path $docs 'assets\build-info.js'), $info)

@@ -666,7 +666,7 @@ int groove_project_export(uint8_t *bytes, unsigned capacity)
     }
     return 0;
 }
-/* 3310 NEW PROJECT: the first factory set's eight layer sounds, no notes. */
+/* DAW DANNY NEW PROJECT: the first factory set's eight layer sounds, no notes. */
 int groove_project_new(void)
 {
     int r = groove_factory_build(0, &record.project);

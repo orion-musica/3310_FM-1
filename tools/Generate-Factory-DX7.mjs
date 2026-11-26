@@ -71,7 +71,7 @@ if(nb)bits.push(acc<<(8-nb));
 }
 const arr=(name,a)=>{const l=[];for(let i=0;i<a.length;i+=24)l.push('    '+a.slice(i,i+24).join(',')+',');return 'static const uint8_t '+name+'[] = {\n'+l.join('\n')+'\n};\n';};
 const content='/* SPDX-License-Identifier: Apache-2.0\n'+
- ' * M-VAVE original V15 factory DX7 bank; lossless encoding, 2026-10-19 (3310: optimal LZ parse with\n'+
+ ' * M-VAVE original V15 factory DX7 bank; lossless encoding, 2026-10-19 (DAW DANNY: optimal LZ parse with\n'+
  ' * voice-aligned matches, then canonical Huffman).\n'+
  ' * Regenerate: node tools/Generate-Factory-DX7.mjs\n'+
  ' * VMEM SHA-256: '+sha(raw)+'\n'+

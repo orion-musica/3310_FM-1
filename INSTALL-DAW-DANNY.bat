@@ -1,5 +1,5 @@
 @echo off
-rem 3310 - one-click local build and install (Windows).
+rem DAW DANNY - one-click local build and install (Windows).
 rem Builds the firmware, then opens the web installer on http://localhost:8766
 setlocal
 cd /d "%~dp0"

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0
- * M-VAVE original V15 factory DX7 bank; lossless encoding, 2026-10-19 (3310: optimal LZ parse with
+ * M-VAVE original V15 factory DX7 bank; lossless encoding, 2026-10-19 (DAW DANNY: optimal LZ parse with
  * voice-aligned matches, then canonical Huffman).
  * Regenerate: node tools/Generate-Factory-DX7.mjs
  * VMEM SHA-256: ecad0b8620f9d784d46c8da1e3c5de02c40214649ed8dec218026431046aad25

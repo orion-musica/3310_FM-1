@@ -7,11 +7,11 @@
 [![build](https://github.com/orion-musica/3310_FM-1/actions/workflows/build.yml/badge.svg)](https://github.com/orion-musica/3310_FM-1/actions/workflows/build.yml)
 ![license](https://img.shields.io/badge/license-GPL--3.0%20%2B%20SDK%20exception-43523d)
 ![device](https://img.shields.io/badge/device-M--VAVE%20FM--1-43523d)
-![status](https://img.shields.io/badge/status-experimental-c7a800)
+![status](https://img.shields.io/badge/status-tested%20on%20FM--1-43523d)
 
 [**Website & web installer**](https://orion-musica.github.io/3310_FM-1/) ·
 [Install](#installation) ·
-[Manual](#using-HYPNOTIC MIKE) ·
+[Manual](#using-hypnotic-mike) ·
 [Build](#building-from-source) ·
 [Design](#design-concepts) ·
 [License](#license)
@@ -22,18 +22,17 @@
 
 ---
 
-> [!WARNING]
-> **HYPNOTIC MIKE is experimental.** The code has been checked in a host simulator that runs the real screen
-> code, but it has not yet been tested on many physical devices. Back up your FM-1 before you install it,
-> and keep the original firmware within reach. The web installer can always put the stock V15 back.
+> [!NOTE]
+> **HYPNOTIC MIKE passed its tests on the M-VAVE FM-1 (FCC ID: 2ARCP-FM1).** As with any firmware update,
+> back up your FM-1 before you install it. The web installer can always put the stock V15 back.
 
 ## Contents
 
-- [What is HYPNOTIC MIKE](#what-is-HYPNOTIC MIKE)
+- [What is HYPNOTIC MIKE](#what-is-hypnotic-mike)
 - [Features](#features)
 - [Screens](#screens)
 - [Installation](#installation)
-- [Using HYPNOTIC MIKE](#using-HYPNOTIC MIKE)
+- [Using HYPNOTIC MIKE](#using-hypnotic-mike)
 - [Parameter reference](#parameter-reference)
 - [What is not (yet) possible](#what-is-not-yet-possible)
 - [Building from source](#building-from-source)

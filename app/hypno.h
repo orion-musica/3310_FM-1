@@ -2,7 +2,7 @@
 #ifndef FM1_HYPNO_H
 #define FM1_HYPNO_H
 #include "instrument.h"
-/* DAW DANNY: eight hypnotic-techno layers, one per track, each with its own
+/* HYPNOTIC MIKE: eight hypnotic-techno layers, one per track, each with its own
  * preset list (presets.c). Build writes one track's sound and 64 steps. */
 enum { HYP_LAYERS = 8 };
 unsigned hyp_count(unsigned layer);

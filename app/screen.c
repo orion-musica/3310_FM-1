@@ -5,7 +5,7 @@
 #include "fm1_engine_control.h"
 #include <string.h>
 enum {
-    /* DAW DANNY: two-tone monochrome LCD. Light green-grey ground, dark pixels. */
+    /* HYPNOTIC MIKE: two-tone monochrome LCD. Light green-grey ground, dark pixels. */
     BACK = 0xc79b,   /* LCD ground  #c7f0d8 */
     PANEL = 0xaeb7,  /* off cells   #aed4ba */
     TEXT = 0x4287,   /* pixels      #43523d */
@@ -127,11 +127,11 @@ static void text(unsigned x, unsigned y, const char *s, unsigned scale, uint16_t
 enum { OVERVIEW, STEPS, FM_EDIT, FM_ENV, FM_LFO, TONE_EDIT, MIX, BLE, PROJECT, NAME, EFFECTS, SOURCE, ACTIONS, STEP_EDIT, RHYTHM, FM_QUICK, PRESET_BROWSER, ARP_EDIT, STARTUP, HLV, FILES };
 enum { OCT_DOWN, OCT_UP, FX, SCL, ENV, LFO, EDIT, GLO, HOME, SAVE, ARP, SEQ, PLAY, REC };
 #define BUTTON(b) (1U << (b))
-/* DAW DANNY ARRANGE page (hlv.inc). */
+/* HYPNOTIC MIKE ARRANGE page (hlv.inc). */
 struct groove_view;
 static void hlv_init(void);
 static void hlv_draw(const struct groove_view v[8]);
-static const uint16_t colors[8] = {0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287}; /* DAW DANNY: one ink */
+static const uint16_t colors[8] = {0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287, 0x4287}; /* HYPNOTIC MIKE: one ink */
 static const uint8_t white_keys[16] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26};
 /* FM1 EDIT key IDs 15,17,19,22,24,27,29,31,34,36 minus 14. */
 static const uint8_t edit_keys[10] = {1, 3, 5, 8, 10, 13, 15, 17, 20, 22};
@@ -245,7 +245,7 @@ struct draw_cache {
     uint32_t header_cache, title_cache, middle_cache, hint_cache, hold_cache, seq_cache;
     uint32_t foot_cache[4], row_cache[8], middle_shape, cell_cache[8][16], tile_cache[16];
     unsigned meter_cache[8];
-    uint32_t hlv[16]; /* DAW DANNY ARRANGE page, see hlv.inc */
+    uint32_t hlv[16]; /* HYPNOTIC MIKE ARRANGE page, see hlv.inc */
 };
 static struct draw_cache saved_cache, band_cache, *cache = &saved_cache;
 static uint32_t led_cache;
@@ -1181,7 +1181,7 @@ static __attribute__((noinline)) void edit_page_draw(unsigned visible)
     }
 }
 #ifndef FM1_HOST_TEST
-/* DAW DANNY has no Bluetooth page, but the SDK build check requires the runtime
+/* HYPNOTIC MIKE has no Bluetooth page, but the SDK build check requires the runtime
  * entry points to stay linked: keep them referenced. */
 static void (*const ble_keep[])(void) = {
     (void (*)(void))fm1_ble_set_role, (void (*)(void))fm1_ble_scan, (void (*)(void))fm1_ble_connect,
@@ -1191,7 +1191,7 @@ static void (*const *volatile ble_keep_ref)(void);
 #endif
 static __attribute__((noinline, cold, minsize)) void boot_draw(void)
 {
-    /* DAW DANNY boot: a classic phone standby screen. Signal bars on the left and
+    /* HYPNOTIC MIKE boot: a classic phone standby screen. Signal bars on the left and
      * battery bars on the right fill up while the engine starts. No logos. */
     if (cache->title_cache != 0) {
         cache->title_cache = 0;
@@ -1202,7 +1202,8 @@ static __attribute__((noinline, cold, minsize)) void boot_draw(void)
         paint_fill(12, 16, 2, 2, TEXT);
         frame(222, 14, 12, 16, TEXT);
         paint_fill(225, 11, 6, 3, TEXT);
-        text(39, 70, "DAW DANNY", 3, TEXT, BACK);
+        text(48, 52, "HYPNOTIC", 3, TEXT, BACK);
+        text(84, 78, "MIKE", 3, TEXT, BACK);
         text(75, 108, "HYPNOTIC TECHNO", 1, TEXT, BACK);
         text(87, 122, "8 TRACKS FM", 1, DIM, BACK);
         text(96, 198, "MENU", 2, TEXT, BACK);
@@ -1223,7 +1224,7 @@ static __attribute__((noinline, cold, minsize)) void boot_draw(void)
 }
 static void draw_page_body(const struct fm1_ble_status *ble)
 {
-    (void)ble; /* DAW DANNY has no Bluetooth page */
+    (void)ble; /* HYPNOTIC MIKE has no Bluetooth page */
     unsigned visible = boot_active ? STARTUP : glo_down && glo_used ? MIX : page;
     if (visible != cache->shown_page) {
         cache->shown_page = visible;
@@ -1631,7 +1632,7 @@ void groove_screen_init(void)
 #ifndef FM1_HOST_TEST
     ble_keep_ref = ble_keep;
 #endif
-    page = music_page = HLV; /* DAW DANNY opens on ARRANGE. */
+    page = music_page = HLV; /* HYPNOTIC MIKE opens on ARRANGE. */
     subpage_return = project_return = HLV; rec_before_press = OVERVIEW;
     rec_down = rec_used = 0;
     selected_note = 60;
@@ -1788,9 +1789,9 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
      * its editor is open. Leave editors that cannot apply to the new source. */
     if (page == NAME && groove_source_type(track) != GROOVE_DX7)
         page = HLV;
-    /* DAW DANNY: HOME+K1 changes the ARRANGE mode; a HOME tap opens the projects. */
+    /* HYPNOTIC MIKE: HOME+K1 changes the ARRANGE mode; a HOME tap opens the projects. */
     if (hlv_home_gesture(controls, pressed, now)) goto controls_done;
-    /* DAW DANNY: EDIT hold remaps USER knobs, EDIT+PLAY cancels. */
+    /* HYPNOTIC MIKE: EDIT hold remaps USER knobs, EDIT+PLAY cancels. */
     if (hlv_edit_gesture(controls, pressed, now, &play_handled)) {
         /* EDIT + PRESETS on ARRANGE: change the track's engine (was on the old overview). */
         if (page == HLV && hlv_edit_down && controls->encoders[6]) {
@@ -1866,9 +1867,9 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
         if (pressed & BUTTON(HOME)) {
             if (page == ACTIONS && action_confirm) action_confirm = 0;
             else if (0 && ble_forget == 1) ble_forget = 0;
-            else page = HLV; /* DAW DANNY: ARRANGE replaces the old overview; HOME+K1 is the mode slider */
+            else page = HLV; /* HYPNOTIC MIKE: ARRANGE replaces the old overview; HOME+K1 is the mode slider */
         } else if (pressed & BUTTON(SEQ)) {
-            /* SEQ alternates ARRANGE (DAW DANNY) and the step editor. */
+            /* SEQ alternates ARRANGE (HYPNOTIC MIKE) and the step editor. */
             if (page == HLV) { page = STEPS; seq_page = 0; step_follow = 1; cache->shown_page = ~0U; }
             else page = HLV;
         } else if (pressed & BUTTON(FX)) {
@@ -1922,7 +1923,7 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
     }
     if (page != STEPS && page != ACTIONS)
         octave = clamp(octave + !!(pressed & BUTTON(OCT_UP)) - !!(pressed & BUTTON(OCT_DOWN)), -2, 2);
-    /* DAW DANNY: SAVE opens the project menu (save, load project, load preset, new). */
+    /* HYPNOTIC MIKE: SAVE opens the project menu (save, load project, load preset, new). */
     if ((pressed & BUTTON(SAVE)) && page != PROJECT && page != FILES &&
         page != SOURCE && page != ACTIONS) {
         hlv_menu_item = hlv_menu_confirm = 0; page = FILES;

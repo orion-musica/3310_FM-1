@@ -7,7 +7,7 @@ void fm1_output_reset(void);
 /* Finish one synthesized block: master gain, USB, Bluetooth, USB recording.
  * Audio ISR only; output holds FM1_BLOCK_WORDS Q23 samples. */
 FM1_AUDIO_CODE void fm1_output_mix(int32_t *output);
-/* DAW DANNY live master FX: RUMBLE 0..100, CRUSH 0..15 (0 is off), and the
+/* HYPNOTIC MIKE live master FX: RUMBLE 0..100, CRUSH 0..15 (0 is off), and the
  * LO CUT / HI CUT one-pole coefficients in Q12 (0 is off). */
 extern volatile uint8_t fm1_fx[2];
 extern volatile uint16_t fm1_cut[2];

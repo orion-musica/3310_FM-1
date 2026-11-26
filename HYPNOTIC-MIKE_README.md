@@ -1,10 +1,10 @@
-# DAW DANNY – firmware dla M-VAVE FM-1 (faza 1)
+# HYPNOTIC MIKE – firmware dla M-VAVE FM-1 (faza 1)
 
 Wersja HASTA LA VISTA w stylu dwukolorowego ekranu klasycznego telefonu: zielonkawe tło LCD, ciemne piksele,
 ekran startowy z paskami zasięgu i baterii. Bez logo i nazwy producenta telefonu. Funkcje są identyczne jak w HASTA LA VISTA.
 
 Fork FM1 Open V14. Silnik dźwięku i sekwencer pozostają oryginalne (zamknięta biblioteka M-VAVE),
-więc timing jest dokładny. DAW DANNY dodaje własny ekran ARRANGE, monochromatyczny wygląd i ekran startowy.
+więc timing jest dokładny. HYPNOTIC MIKE dodaje własny ekran ARRANGE, monochromatyczny wygląd i ekran startowy.
 
 ## Co się zmieniło w kodzie
 

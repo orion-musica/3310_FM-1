@@ -4,7 +4,7 @@
 #include "fm1_audio_io.h"
 
 static unsigned output_gain;
-/* DAW DANNY live master FX, set by the ARRANGE page (see audio_output.h). */
+/* HYPNOTIC MIKE live master FX, set by the ARRANGE page (see audio_output.h). */
 volatile uint8_t fm1_fx[2];
 volatile uint16_t fm1_cut[2];
 static int32_t usb_pcm[FM1_BLOCK_WORDS] __attribute__((aligned(32)));

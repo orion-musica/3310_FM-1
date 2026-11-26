@@ -1,6 +1,6 @@
 <div align="center">
 
-# DAW DANNY
+# HYPNOTIC MIKE
 
 **Hypnotic techno firmware for the M-VAVE FM-1, styled after a two-tone phone screen.**
 
@@ -11,29 +11,29 @@
 
 [**Website & web installer**](https://orion-musica.github.io/3310_FM-1/) ·
 [Install](#installation) ·
-[Manual](#using-DAW DANNY) ·
+[Manual](#using-HYPNOTIC MIKE) ·
 [Build](#building-from-source) ·
 [Design](#design-concepts) ·
 [License](#license)
 
-<img src="docs/assets/rhythm.png" width="360" alt="DAW DANNY ARRANGE page in RHYTHM mode: eight tracks, each with a phone symbol and sixteen bar cells">
+<img src="docs/assets/rhythm.png" width="360" alt="HYPNOTIC MIKE ARRANGE page in RHYTHM mode: eight tracks, each with a phone symbol and sixteen bar cells">
 
 </div>
 
 ---
 
 > [!WARNING]
-> **DAW DANNY is experimental.** The code has been checked in a host simulator that runs the real screen
+> **HYPNOTIC MIKE is experimental.** The code has been checked in a host simulator that runs the real screen
 > code, but it has not yet been tested on many physical devices. Back up your FM-1 before you install it,
 > and keep the original firmware within reach. The web installer can always put the stock V15 back.
 
 ## Contents
 
-- [What is DAW DANNY](#what-is-DAW DANNY)
+- [What is HYPNOTIC MIKE](#what-is-HYPNOTIC MIKE)
 - [Features](#features)
 - [Screens](#screens)
 - [Installation](#installation)
-- [Using DAW DANNY](#using-DAW DANNY)
+- [Using HYPNOTIC MIKE](#using-HYPNOTIC MIKE)
 - [Parameter reference](#parameter-reference)
 - [What is not (yet) possible](#what-is-not-yet-possible)
 - [Building from source](#building-from-source)
@@ -45,14 +45,14 @@
 - [Credits](#credits)
 - [License](#license)
 
-## What is DAW DANNY
+## What is HYPNOTIC MIKE
 
-DAW DANNY is a free, open-source firmware for the **M-VAVE FM-1** pocket FM synthesizer. It turns the FM-1
+HYPNOTIC MIKE is a free, open-source firmware for the **M-VAVE FM-1** pocket FM synthesizer. It turns the FM-1
 into an eight-layer arranger for hypnotic, looping techno. Everything is drawn in two shades of
 green on a pale LCD background, like the phone screens of the early 2000s.
 
-DAW DANNY is built on **FM1 Open V14**, M-VAVE's open firmware. The sound engine and the sequencer are
-M-VAVE's own, so timing and sound are exactly as on FM1 Open. DAW DANNY adds a new **ARRANGE** page with
+HYPNOTIC MIKE is built on **FM1 Open V14**, M-VAVE's open firmware. The sound engine and the sequencer are
+M-VAVE's own, so timing and sound are exactly as on FM1 Open. HYPNOTIC MIKE adds a new **ARRANGE** page with
 five knob modes, eight hypnotic-techno layers with their own presets, live master effects, a new look,
 a phone-style boot screen, a phone symbol for every layer and a SNAKE light show on the keys.
 Everything FM1 Open can do keeps working.
@@ -124,7 +124,7 @@ STATIC HUSH, GHOST PULSE, DREAD VOID and HOLLOW RUST.
 **Look**
 
 - Two-tone LCD palette: background `#c7f0d8`, pixels `#43523d`.
-- Boot screen with an antenna, signal and battery bars that fill up, a large **DAW DANNY** and **MENU** at the
+- Boot screen with an antenna, signal and battery bars that fill up, a large **HYPNOTIC MIKE** and **MENU** at the
   bottom.
 - Eight layer symbols: note, bell, battery, keypad, handset, signal, snake and message.
 
@@ -178,19 +178,19 @@ The symbol belongs to the track number, not to the sound: change the preset and 
    This only reconnects; nothing is written yet. Coming from FM1 Open? Skip this step.
 4. Tick the backup confirmation, click **Force flash** (or **Install**) and accept the warning. Do not
    unplug or switch off while it writes.
-5. Wait for the sample check to finish. The FM-1 restarts into the DAW DANNY boot screen.
+5. Wait for the sample check to finish. The FM-1 restarts into the HYPNOTIC MIKE boot screen.
 
 Each build also comes as a single offline HTML installer (`flasher.html`) and as a bare firmware
-package (`DAW-DANNY.fwsc`) with its SHA-256 checksum. You find them in the
+package (`HYPNOTIC-MIKE.fwsc`) with its SHA-256 checksum. You find them in the
 [Actions](https://github.com/orion-musica/3310_FM-1/actions) artifacts and on the website.
 
 ### Going back to stock
 
 Open the installer and click **Restore original V15**. It installs the original firmware and restores
-all 128 factory voices across the four banks. DAW DANNY projects and samples do not work on stock firmware,
+all 128 factory voices across the four banks. HYPNOTIC MIKE projects and samples do not work on stock firmware,
 so export them first.
 
-## Using DAW DANNY
+## Using HYPNOTIC MIKE
 
 The FM-1 starts on the ARRANGE page. **SEQ** switches between ARRANGE and FM1 Open's own step editor.
 **HOME** brings you back to ARRANGE from any page; on ARRANGE, holding it and turning K1 opens the
@@ -258,12 +258,12 @@ When a parameter does not apply to the selected track, a short notice explains w
 
 ## What is not (yet) possible
 
-DAW DANNY works within FM1 Open's closed sequencer. That sets a few limits:
+HYPNOTIC MIKE works within FM1 Open's closed sequencer. That sets a few limits:
 
 - **Track length** is 16, 32, 48 or 64 steps. Free lengths from 1 to 128 would need a new sequencer.
 - **Ratchets and nudge** are not available, so GROOVE uses GATE and SWING instead.
 - **The FM-1's program memory is full.** FM1 Open alone leaves only a few hundred bytes free. To make room
-  for ARRANGE, DAW DANNY drops FM1 Open's old overview page (ARRANGE replaces it) and its Bluetooth settings
+  for ARRANGE, HYPNOTIC MIKE drops FM1 Open's old overview page (ARRANGE replaces it) and its Bluetooth settings
   page, uses shorter help texts and stores the original DX7 factory bank with a tighter, lossless
   encoding. Bluetooth MIDI itself still works with its saved settings.
 - **HITS, ROTATE, MUTATE, the preset numbers, the live effects and the USER map live in memory.** They
@@ -274,12 +274,12 @@ DAW DANNY works within FM1 Open's closed sequencer. That sets a few limits:
 
 ### In the cloud (recommended)
 
-Every push to `main` builds DAW DANNY on GitHub's own Windows machines. The workflow is
+Every push to `main` builds HYPNOTIC MIKE on GitHub's own Windows machines. The workflow is
 [`.github/workflows/build.yml`](.github/workflows/build.yml). It:
 
 1. downloads JieLi's Windows toolchain 2.5.3 and unpacks or installs it;
 2. builds the firmware, the web installer and the website with `tools/Make-Site.ps1`;
-3. uploads the firmware, the installer and `SHA256SUMS.txt` as the **DAW DANNY** artifact;
+3. uploads the firmware, the installer and `SHA256SUMS.txt` as the **HYPNOTIC MIKE** artifact;
 4. publishes `docs/` to GitHub Pages, with an installer that is ready to use.
 
 To run it by hand: **Actions → build → Run workflow**. For the website, set
@@ -291,7 +291,7 @@ Requires Windows x64, PowerShell and **JieLi Windows toolchain 2.5.3** (PI32v2 c
 target). The build checks all toolchain files against `sdk/manifest.json`. See
 [README.FM1-OPEN.md](README.FM1-OPEN.md) for the download and the installation guide.
 
-The easy way: double-click **`INSTALL-DAW-DANNY.bat`**. It finds the toolchain under `C:\JL\pi32`, builds
+The easy way: double-click **`INSTALL-HYPNOTIC-MIKE.bat`**. It finds the toolchain under `C:\JL\pi32`, builds
 everything and opens the installer at `http://localhost:8766`. **`OPEN-SITE.bat`** opens the site
 again later without building.
 
@@ -313,7 +313,7 @@ $env:FM1_SOURCE_URL = 'https://github.com/orion-musica/3310_FM-1/archive/refs/he
 
 | Output | Where |
 |---|---|
-| Firmware package | `build/dx7/generated/FM1_OFFICIAL_OPEN.fwsc` → `docs/downloads/DAW-DANNY.fwsc` |
+| Firmware package | `build/dx7/generated/FM1_OFFICIAL_OPEN.fwsc` → `docs/downloads/HYPNOTIC-MIKE.fwsc` |
 | Offline web installer | `build/official-web/FM1-Official-Open-Source.html` → `docs/install/flasher.html` |
 | Checksum | `docs/downloads/SHA256SUMS.txt` |
 | Build info for the installer page | `docs/assets/build-info.js` |
@@ -358,7 +358,7 @@ $env:FM1_SOURCE_URL = 'https://github.com/orion-musica/3310_FM-1/archive/refs/he
 
 ## Design concepts
 
-`docs/design/` holds a concept image for every screen of the full DAW DANNY interface. They show
+`docs/design/` holds a concept image for every screen of the full HYPNOTIC MIKE interface. They show
 where the project is heading. **Only the boot screen and the ARRANGE pages (images 01 and 03–08) are
 in the firmware today.** The other screens use FM1 Open's own pages for now.
 
@@ -384,7 +384,7 @@ in the firmware today.** The other screens use FM1 Open's own pages for now.
 | The browser does not find the FM-1 | Close other MIDI apps and installer tabs, switch the FM-1 off and on, reconnect USB and click Connect again. The installer's **Connection details** lists the MIDI ports it found. |
 | START is greyed out | The ready check on the installer page says why: wrong browser, page opened as a file, or no build yet. |
 | The update stopped halfway | Keep the cable in, power-cycle the FM-1, reconnect and run the installer again with force flash. |
-| The installer page says **NOT BUILT** | No build has finished yet. Wait for the cloud build, or build locally with `INSTALL-DAW-DANNY.bat`. |
+| The installer page says **NOT BUILT** | No build has finished yet. Wait for the cloud build, or build locally with `INSTALL-HYPNOTIC-MIKE.bat`. |
 | A knob shows `… ONLY` or `NOT ON DX7` | That parameter does not apply to the selected track's sound source. Pick another track or mode. |
 | Patterns reset after power-off | HITS, ROTATE, MUTATE and the USER map are not stored yet; press SAVE to keep the resulting steps. |
 
@@ -403,17 +403,17 @@ with a cloud build before opening the pull request.
 
 ## Credits
 
-- **DAW DANNY:** BULØKE. The code was written together with Claude.
+- **HYPNOTIC MIKE:** BULØKE. The code was written together with Claude.
 - **FM1 Open:** M-VAVE (珠海笙科智能科技有限公司), the base firmware, SDK and web installer.
 - **Third-party components** (Open303, DaisySP, stmlib, MSFA / Dexed, emu2149, SEA codec, jl-misctools
   and others): see [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ## License
 
-DAW DANNY's application code is licensed under **GPL-3.0-only with the FM1 SDK linking exception**, like
+HYPNOTIC MIKE's application code is licensed under **GPL-3.0-only with the FM1 SDK linking exception**, like
 FM1 Open; see [LICENSE.md](LICENSE.md). The engine in `sdk/lib/libfm1_engine.a` is M-VAVE's binary SDK
 under its own terms, and the boot and recovery resources are Apache-2.0; see
 [THIRD_PARTY.md](THIRD_PARTY.md). If you share a firmware built from this code, share its source too.
 
-DAW DANNY is a community project. It is not affiliated with or endorsed by M-VAVE or any phone maker.
+HYPNOTIC MIKE is a community project. It is not affiliated with or endorsed by M-VAVE or any phone maker.
 Installing custom firmware is at your own risk.

@@ -1,5 +1,5 @@
 @echo off
-rem DAW DANNY - open the website (and installer, if built) on http://localhost:8766
+rem HYPNOTIC MIKE - open the website (and installer, if built) on http://localhost:8766
 setlocal
 cd /d "%~dp0"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\Serve-Site.ps1" -Page "index.html"
